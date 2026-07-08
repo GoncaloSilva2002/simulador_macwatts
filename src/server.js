@@ -13,6 +13,10 @@ app.use(express.json({ limit: process.env.JSON_LIMIT || "35mb" }));
 app.use(express.urlencoded({ extended: true, limit: process.env.JSON_LIMIT || "35mb" }));
 app.use(express.static(staticDir));
 
+app.get("/healthz", (req, res) => {
+  res.status(200).send("ok");
+});
+
 app.post("/api/quote/email", async (req, res) => {
   const request = req.body || {};
   const clientName = String(request.clientName || "").trim();
