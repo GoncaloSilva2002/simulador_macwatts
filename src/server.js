@@ -13,6 +13,10 @@ app.use(express.json({ limit: process.env.JSON_LIMIT || "35mb" }));
 app.use(express.urlencoded({ extended: true, limit: process.env.JSON_LIMIT || "35mb" }));
 app.use(express.static(staticDir));
 
+app.get("/", (req, res) => {
+  res.sendFile(path.join(staticDir, "geocoding.html"));
+});
+
 app.get("/healthz", (req, res) => {
   res.status(200).send("ok");
 });
@@ -56,7 +60,7 @@ app.post("/api/quote/email", async (req, res) => {
 });
 
 app.get("*", (req, res) => {
-  res.sendFile(path.join(staticDir, "index.html"));
+  res.sendFile(path.join(staticDir, "geocoding.html"));
 });
 
 const server = app.listen(port, "0.0.0.0", () => {

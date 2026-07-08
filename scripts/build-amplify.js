@@ -12,6 +12,7 @@ run("node", ["--check", path.join(root, "src", "services", "supabaseSimulationSe
 
 fs.rmSync(distDir, { recursive: true, force: true });
 fs.cpSync(publicDir, distDir, { recursive: true });
+fs.copyFileSync(path.join(publicDir, "geocoding.html"), path.join(distDir, "index.html"));
 
 const apiBaseUrl = (process.env.API_BASE_URL || "").trim().replace(/\/+$/, "");
 const config = `window.MACWATTS_CONFIG = ${JSON.stringify({ apiBaseUrl }, null, 2)};\n`;

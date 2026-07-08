@@ -486,10 +486,7 @@
         roof: roofData || null
       };
 
-      const apiBaseUrl = (window.MACWATTS_CONFIG && window.MACWATTS_CONFIG.apiBaseUrl)
-        ? String(window.MACWATTS_CONFIG.apiBaseUrl).replace(/\/+$/, "")
-        : "";
-      const response = await fetch(`${apiBaseUrl}/api/quote/email`, {
+      const response = await fetch(`${getApiBaseUrl()}/api/quote/email`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -498,6 +495,10 @@
       });
       const responseText = await response.text();
       if (!response.ok) {
+        const contentType = response.headers.get("content-type") || "";
+        if (contentType.includes("text/html") || responseText.trim().startsWith("<!DOCTYPE html")) {
+          throw new Error("A API de envio nao esta configurada neste dominio. Define API_BASE_URL no Amplify com o URL do backend Node.");
+        }
         throw new Error(responseText || `HTTP ${response.status}`);
       }
 
@@ -530,3 +531,10 @@
       console.error("Erro ao enviar pedido:", error);
     }
   });
+
+  function getApiBaseUrl() {
+    const configured = window.MACWATTS_CONFIG && window.MACWATTS_CONFIG.apiBaseUrl
+      ? String(window.MACWATTS_CONFIG.apiBaseUrl).trim().replace(/\/+$/, "")
+      : "";
+    return configured;
+  }
