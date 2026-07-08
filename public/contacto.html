@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contacto</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="/image.png">
+  <link rel="apple-touch-icon" href="/image.png">
+  <link rel="stylesheet" href="contacto.css">
+</head>
+<body>
+<main class="shell">
+  <div class="top-bar">
+    <a class="brand" href="http://192.168.0.253/macwatts1/residencial/" aria-label="MacWatts">
+      <img src="/image.png" alt="Macwatts">
+    </a>
+  </div>
+  <div class="steps-bar">
+    <div class="step-track">
+      <div class="step done">O seu telhado</div>
+      <div class="step done">Questionário</div>
+      <div class="step active">Contacto</div>
+    </div>
+  </div>
+  <section class="content">
+    <article class="card">
+      <h2>Resumo para orçamento</h2>
+      <p class="sub">Dados recolhidos</p>
+      <div class="summary">
+        <div id="sumAddress">Morada: sem dados</div>
+        <div id="sumCoords">Coordenadas: sem dados</div>
+        <div id="sumArea">Área do telhado: sem dados</div>
+        <div id="sumRoofType">Tipo de telhado: sem dados</div>
+        <div id="sumProperty">Tipo de imóvel: sem dados</div>
+        <div id="sumBattery">Bateria: sem dados</div>
+        <div id="sumPrice">Preço da luz: sem dados</div>
+        <div id="sumPricePerKwh">Preço por kWh: sem dados</div>
+        <div id="sumPowerTerm">Termo de potência: sem dados</div>
+        <div id="sumKwh">Consumo mensal: sem dados</div>
+        <div id="sumKwhCovered">Consumo coberto no Periodo Solar: sem dados</div>
+        <div id="sumZone">Zona: sem dados</div>
+        <div id="sumPanelProduction">Produção média por painel: sem dados</div>
+        <div id="sumPanels">Painéis necessários: sem dados</div>
+        <div id="sumUsage">Maior consumo: sem dados</div>
+        <div id="sumPhase">Tipo de contador: sem dados</div>
+      </div>
+    </article>
+
+    <article class="card">
+      <h2>Dados de contacto</h2>
+      <p class="sub">Preencha os Campos</p>
+      <form id="contactForm">
+        <div>
+          <label for="clientName">Nome</label>
+          <input id="clientName" name="clientName" type="text" required>
+        </div>
+        <div>
+          <label for="clientEmail">Email</label>
+          <input id="clientEmail" name="clientEmail" type="email" required>
+        </div>
+        <div>
+          <label for="clientPhone">Número de telemóvel</label>
+          <input id="clientPhone" name="clientPhone" type="tel" required>
+        </div>
+        <div>
+          <label for="clientNif">NIF</label>
+          <input id="clientNif" name="clientNif" type="text" inputmode="numeric" maxlength="9" required>
+        </div>
+        <div class="actions">
+          <button type="button" class="back" id="backBtn">Voltar ao questionário</button>
+          <button type="submit" class="pdf">Enviar pedido</button>
+        </div>
+      </form>
+      <div id="status"></div>
+    </article>
+  </section>
+</main>
+
+<script src="contacto.js" defer></script>
+</body>
+</html>

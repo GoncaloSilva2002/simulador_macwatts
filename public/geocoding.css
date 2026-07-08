@@ -1,0 +1,257 @@
+body { margin: 0; font-family: Manrope, sans-serif; }
+#map {
+  height: 100vh;
+  width: 100%;
+  border: 15px solid #e5e7eb;
+  border-radius: 14px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+#map.drawing,
+#map.drawing .gm-style,
+#map.drawing .gm-style * {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffffff' d='M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z'/%3E%3Cpath fill='%23ffffff' d='M20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z'/%3E%3C/svg%3E") 2 22, auto;
+}
+
+.shell {
+  position: absolute; top: 10px; left: 10px; right: 10px; z-index: 12;
+  border: 1px solid #bde7e2;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #f8fbfa;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.top-bar {
+  height: 70px;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  gap: 10px;
+}
+
+.brand {
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  color: #111827;
+  white-space: nowrap;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.brand img {
+  height: 30px;
+  width: auto;
+  display: block;
+}
+
+.search-group {
+  display: flex;
+  gap: 10px;
+  flex: 1;
+}
+
+.steps-bar {
+  height: 52px;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 8px 16px 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 25px;
+}
+
+.step-track {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  flex: 1 1 auto;
+}
+
+.step {
+  position: relative;
+  text-align: center;
+  color: #9ca3af;
+  font-weight: 700;
+  font-size: 0.86rem;
+  padding-top: 16px;
+}
+
+.step::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid #d1d5db;
+  background: #fff;
+}
+
+.step.done {
+  color: #0f766e;
+}
+
+.step.done::before {
+  border-color: #0f766e;
+  background: #0f766e;
+}
+
+.step.active {
+  color: #0f766e;
+}
+
+.step.active::before {
+  border-color: #14b8a6;
+  background: #14b8a6;
+}
+
+.top-bar input {
+  flex: 1; padding: 10px;
+  border: 1px solid #e5e7eb; border-radius: 8px;
+  font-size: 14px;
+}
+
+.top-bar button {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#drawRoofBtn { 
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: none;
+  background: #14b8a6;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  }
+
+#drawRoofBtn:hover { background: #0f766e; }
+
+#clearRoofBtn {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: none;
+  background: #0f766e;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+#clearRoofBtn:hover { background: #0b5f59; }
+
+.panel {
+  position: absolute; top: 200px; left: 30px;
+  width: 400px;
+  background: #ffffff; padding: 16px; border-radius: 14px;
+  z-index: 10;
+  display: flex; flex-direction: column; gap: 10px;
+  border: 1px solid #d7dde3;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+}
+
+.panel-title { font-size: 18px; font-weight: 800; color: #1f2937; }
+.panel-text { font-size: 13px; color: #6b7280; line-height: 1.35; }
+.panel-divider { height: 1px; background: #e5e7eb; margin: 2px 0; }
+.panel-subtext { font-size: 12.5px; color: #6b7280; }
+
+#houseInfo { font-weight: 600; }
+#message { font-weight: 600; }
+
+.panel-actions { display: flex; gap: 8px; }
+
+#nextStepBtn {
+  margin-top: 4px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: none;
+  background: #e5e7eb;
+  color: #6b7280;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#nextStepBtn:disabled {
+  background: #e5e7eb;
+  color: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
+#nextStepBtn.ready {
+  background: #14b8a6;
+  color: #ffffff;
+}
+
+@media (max-width: 900px) {
+  #map {
+    border-radius: 0;
+    border-width: 0;
+  }
+
+  .shell {
+    top: 6px;
+    left: 6px;
+    right: 6px;
+  }
+
+  .top-bar {
+    height: auto;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .search-group {
+    width: 100%;
+  }
+
+  .steps-bar {
+    height: auto;
+    padding: 8px 10px 10px;
+  }
+
+  .step {
+    font-size: 0.75rem;
+    padding-top: 14px;
+  }
+
+  .panel {
+    position: fixed;
+    left: 6px;
+    right: 6px;
+    bottom: 10px;
+    top: auto;
+    width: auto;
+    max-height: 44vh;
+    overflow: auto;
+  }
+}
+
+/* Durante o desenho no telemóvel, encolhe o painel para não tapar o telhado. */
+body.drawing-mode .panel {
+  max-height: 92px;
+  overflow: hidden;
+}
+
+body.drawing-mode .panel-text,
+body.drawing-mode .panel-divider,
+body.drawing-mode #houseInfo,
+body.drawing-mode #message,
+body.drawing-mode #nextStepBtn {
+  display: none;
+}

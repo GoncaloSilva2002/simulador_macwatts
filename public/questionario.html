@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Questionário</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="/image.png">
+  <link rel="apple-touch-icon" href="/image.png">
+  <link rel="stylesheet" href="questionario.css">
+</head>
+<body>
+<main class="shell">
+  <div class="top-bar">
+    <a class="brand" href="http://192.168.0.253/macwatts1/residencial/" aria-label="MacWatts">
+      <img src="/image.png" alt="Macwatts">
+    </a>
+  </div>
+  <div class="steps-bar">
+    <div class="step-track">
+      <div class="step done">O seu telhado</div>
+      <div class="step active">Questionário</div>
+      <div class="step">Contacto</div>
+    </div>
+  </div>
+  <section class="content">
+    <article class="card">
+      <h2 id="clientAddressTitle">Morada do cliente</h2>
+      <p class="sub">Vista da área escolhida no passo anterior.</p>
+      <div id="roofPreview" style="position: relative;"></div>
+          <div class="meta">
+            <div id="centerText">Centro: sem dados</div>
+            <div id="areaText">Área estimada: sem dados</div>
+            <div id="zoneText">Zona: sem dados</div>
+            <div>
+              <input id="invoiceCapture" type="file" accept="image/*" capture="environment" style="display:none">
+              <input id="invoicePdfUpload" type="file" accept="application/pdf" style="display:none">
+              <button type="button" class="save" id="openInvoiceMenu">Adicionar fatura</button>
+              <div class="invoice-menu" id="invoiceMenu">
+                <button type="button" class="save" id="openInvoiceCapture">Tirar fotografia</button>
+                <button type="button" class="save" id="openInvoicePdf">Carregar PDF</button>
+              </div>
+              <div class="invoice-status-wrap" id="invoiceStatusWrap">
+                <button type="button" class="invoice-remove" id="invoiceRemoveBtn" aria-label="Remover ficheiro anexado" hidden>×</button>
+                <div class="hint" id="invoiceStatus">Opcional. Adicionar a Fatura para obter uma proposta mais personalizada</div>
+              </div>
+            </div>
+          </div>
+          <div class="energy-charts">
+            <div class="chart-card">
+              <div class="chart-title">Destino da produção mensal</div>
+              <div class="chart-row">
+                <div class="chart-label">Para a Habitação</div>
+                <div class="chart-bar">
+                  <div class="chart-fill chart-green" id="chartHomeFill"></div>
+                  <span class="chart-value" id="chartHomePct">0%</span>
+                </div>
+              </div>
+              <div class="chart-row" id="chartBatteryProdRow">
+                <div class="chart-label">Para a Bateria</div>
+                <div class="chart-bar">
+                  <div class="chart-fill chart-bordo" id="chartBatteryProdFill"></div>
+                  <span class="chart-value" id="chartBatteryProdPct">0%</span>
+                </div>
+              </div>
+              <div class="chart-row">
+                <div class="chart-label">Para a Rede</div>
+                <div class="chart-bar">
+                  <div class="chart-fill chart-dark" id="chartGridFill"></div>
+                  <span class="chart-value" id="chartGridPct">0%</span>
+                </div>
+              </div>
+              <div class="chart-caption-list">
+                <div class="chart-caption" id="chartHomeCaption">0 kWh para a habitação</div>
+                <div class="chart-caption" id="chartBatteryCaption">0 kWh para a bateria</div>
+                <div class="chart-caption" id="chartGridCaption">0 kWh para a rede</div>
+              </div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-title">Origem do consumo mensal</div>
+              <div class="chart-row">
+                <div class="chart-label">Do Sistema Fotovoltaico</div>
+                <div class="chart-bar">
+                  <div class="chart-fill chart-blue" id="chartSystemFill"></div>
+                  <span class="chart-value" id="chartSystemPct">0%</span>
+                </div>
+              </div>
+              <div class="chart-row" id="chartBatteryUseRow">
+                <div class="chart-label">Da Bateria</div>
+                <div class="chart-bar">
+                  <div class="chart-fill chart-bordo" id="chartBatteryUseFill"></div>
+                  <span class="chart-value" id="chartBatteryUsePct">0%</span>
+                </div>
+              </div>
+              <div class="chart-row">
+                <div class="chart-label">Da Rede</div>
+                <div class="chart-bar">
+                  <div class="chart-fill chart-yellow" id="chartNetworkFill"></div>
+                  <span class="chart-value" id="chartNetworkPct">0%</span>
+                </div>
+              </div>
+              <div class="chart-caption-list">
+                <div class="chart-caption" id="chartSystemCaption">0 kWh do sistema</div>
+                <div class="chart-caption" id="chartBatteryUseCaption">0 kWh da bateria</div>
+                <div class="chart-caption" id="chartNetworkCaption">0 kWh da rede</div>
+              </div>
+            </div>
+          </div>
+    </article>
+
+    <article class="card">
+      <h2>Questionário inicial</h2>
+      <p class="sub">Preencha os Campos</p>
+      <form id="questionnaireForm">
+        <div>
+          <div class="label">Tipo de imóvel</div>
+          <div class="options">
+            <label class="choice"><input type="radio" name="propertyType" value="condominio" required><span>Condomínio</span></label>
+            <label class="choice"><input type="radio" name="propertyType" value="casa" required><span>Casa</span></label>
+            <label class="choice"><input type="radio" name="propertyType" value="apartamento" required><span>Apartamento</span></label>
+          </div>
+        </div>
+        <hr class="divider" />
+        <div>
+          <div class="label">Altura do dia do consumo</div>
+          <div class="options">
+            <label class="choice"><input type="radio" name="usageTime" value="manhas" required><span>Manhãs (06h:00-14h:00)</span></label>
+            <label class="choice"><input type="radio" name="usageTime" value="tardes" required><span>Tardes (14h:00-18h:00)</span></label>
+            <label class="choice"><input type="radio" name="usageTime" value="noites" required><span>Noites (18h:00-06h:00)</span></label>
+            <label class="choice"><input type="radio" name="usageTime" value="diaTodo" required><span>Dia todo</span></label>
+          </div>
+        </div>
+        <hr class="divider" />
+        <div>
+          <div class="label">Tipo de contador</div>
+          <div class="options">
+            <label class="choice"><input type="radio" name="phaseType" value="monofasica" required><span>Monofásica</span></label>
+            <label class="choice"><input type="radio" name="phaseType" value="trifasica" required><span>Trifásica</span></label>
+          </div>
+        </div>
+        <hr class="divider" />
+        <div>
+          <div class="label">Pretende Armazenamento de Energia?</div>
+          <div class="options">
+            <label class="choice"><input type="radio" name="batteryChoice" value="sim" required><span>Sim</span></label>
+            <label class="choice"><input type="radio" name="batteryChoice" value="nao" required><span>Não</span></label>
+          </div>
+        </div>
+        <hr class="divider" />
+        <div>
+          <div class="label">O seu telhado é plano (laje) ou inclinado?</div>
+          <div class="options">
+            <label class="choice"><input type="radio" name="roofType" value="plano" required><span>Plano (laje)</span></label>
+            <label class="choice"><input type="radio" name="roofType" value="inclinado" required><span>Inclinado</span></label>
+          </div>
+        </div>
+	        <hr class="divider" />
+	        <div>
+	          <label class="label label-with-info" for="priceLight">
+	            <span>Preço Total de Energia (S/Iva)</span>
+	            <span class="info-popover" aria-label="Exemplo na fatura">
+	              <span
+	                class="info-icon"
+	                role="button"
+	                tabindex="0"
+	                aria-label="Ver exemplo na fatura"
+	                data-info-image="imagens/fatura.jpeg"
+	                data-info-alt="Exemplo na fatura"
+	              >i</span>
+	            </span>
+	          </label>
+	          <div class="price-slider-wrap">
+	            <div class="price-value" id="priceValue">0€</div>
+	            <input id="priceLight" name="priceLight" type="range" min="0" max="2000" step="1" value="0">
+	          </div>
+	          <div>
+	            <label class="label" for="pricePerKwh">Preço por kWh (opcional)</label>
+	            <input id="pricePerKwh" name="pricePerKwh" type="text" inputmode="decimal" autocomplete="off" placeholder="0.20">
+	            <div class="hint">Se não preencher, usamos 0.20€.</div>
+	          </div>
+	          <div>
+            <label class="label" for="powerTerm">Termo de potência (kVA)</label>
+            <input id="powerTerm" name="powerTerm" type="text" inputmode="decimal" autocomplete="off" placeholder="10.35">
+            <div class="hint">Exemplo: 10.35 kVA.</div>
+          </div>
+          <div class="calc-box">
+            <div>Consumo total por mês: <strong id="monthlyKwhTotalText">0.0 kWh</strong></div>
+            <div>Autoconsumo Solar: <strong id="monthlyKwhCoveredText">0.0 kWh</strong></div>
+            <div>Potência mínima a instalar: <strong id="monthlyKwpText">0.0 kWp</strong></div>
+            <div>Kit Solar Residencial: <strong id="panelsNeededText">0 painéis</strong></div>
+            <div>Capacidade de bateria: <strong id="batteryCapacityText">Sem bateria</strong></div>
+            <div id="powerTermWarning" class="hint"></div>
+            <div id="roofPanelsWarning" class="hint"></div>
+          </div>
+        </div>
+        <div class="buttons">
+          <button type="button" class="back" id="backBtn">Voltar ao telhado</button>
+          <button type="submit" class="save">Continuar</button>
+        </div>
+      </form>
+      <div id="status"></div>
+    </article>
+  </section>
+</main>
+
+<div class="camera-overlay" id="cameraOverlay" aria-hidden="true">
+  <div class="camera-card">
+    <div class="camera-header">Tirar fotografia</div>
+    <video id="cameraPreview" autoplay playsinline></video>
+    <canvas id="cameraCanvas" style="display:none;"></canvas>
+    <div class="camera-actions">
+      <button type="button" class="back" id="closeCamera">Fechar</button>
+      <button type="button" class="back" id="switchCamera" aria-label="Trocar entre câmara frontal e traseira">Trocar câmara</button>
+      <button type="button" class="save" id="capturePhoto">Capturar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="powerTermModal" role="dialog" aria-modal="true" aria-labelledby="powerTermTitle">
+  <div class="alert-modal">
+    <h3 id="powerTermTitle" class="alert-title">Termo de potência insuficiente</h3>
+    <p class="alert-text" id="powerTermModalText">Não dá: tem de aumentar o termo de potência.</p>
+    <div class="modal-actions">
+      <button type="button" class="save" id="powerTermClose">Entendi</button>
+    </div>
+  </div>
+</div>
+
+<script src="questionario.js" defer></script>
+<script>
+  // Evita condição de corrida: o script do Google Maps (async) pode chamar o callback
+  // antes do `questionario.js` definir `window.initQuestionnaireMap`.
+  window.__questionnaireMapInitRequested = false;
+  window.initQuestionnaireMap = function () {
+    window.__questionnaireMapInitRequested = true;
+  };
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDb_0_8iNV8ojyt8nbqXKt7SBVgWGc-qRs&callback=initQuestionnaireMap" async defer>
+</script>
+
+</body>
+</html>

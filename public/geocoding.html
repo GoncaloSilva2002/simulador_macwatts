@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Macwatts</title>
+
+  <link rel="icon" type="image/png" href="/image.png">
+  <link rel="apple-touch-icon" href="/image.png">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="geocoding.css">
+</head>
+
+<body>
+
+<div class="shell">
+  <div class="top-bar">
+    <a class="brand" href="http://192.168.0.253/macwatts1/residencial/" aria-label="MacWatts">
+      <img src="/image.png" alt="Macwatts">
+    </a>
+    <div class="search-group">
+      <input id="address" placeholder="Pesquisar morada..." />
+      <button id="searchBtn">Pesquisar</button>
+    </div>
+  </div>
+  <div class="steps-bar">
+    <div class="step-track">
+      <div class="step active">O seu telhado</div>
+      <div class="step">Questionário</div>
+      <div class="step">Contacto</div>
+    </div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-title">Selecione a sua Casa</div>
+  <div class="panel-text">Carregue no mapa para ajustar o ponto da casa e desenhe uma ou mais faces do telhado. Pode selecionar várias faces clicando nelas.</div>
+  <div class="panel-divider"></div>
+  <div id="houseInfo" class="panel-subtext">Casa selecionada: nenhuma. Clica no mapa para mudar o pino.</div>
+  <div id="message" class="panel-subtext">Sol no telhado: sem dados.</div>
+  <div class="panel-actions">
+    <button id="drawRoofBtn">Desenhar face</button>
+    <button id="clearRoofBtn">Limpar</button>
+  </div>
+  <button id="nextStepBtn" disabled>Continuar</button>
+</div>
+
+<div id="map"></div>
+
+<script src="geocoding.js" defer></script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDb_0_8iNV8ojyt8nbqXKt7SBVgWGc-qRs&libraries=places,geometry&callback=initMap" async defer></script>
+
+</body>
+</html>
