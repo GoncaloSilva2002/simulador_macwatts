@@ -4,7 +4,8 @@
   "description": "Simulador MacWatts em Node.js",
   "main": "src/server.js",
   "scripts": {
-    "build": "node --check src/server.js && node --check src/services/quoteEmailService.js && node --check src/services/supabaseSimulationService.js",
+    "build": "node scripts/build-amplify.js",
+    "check": "node --check src/server.js && node --check src/services/quoteEmailService.js && node --check src/services/supabaseSimulationService.js",
     "start": "node src/server.js",
     "dev": "node --watch src/server.js"
   },

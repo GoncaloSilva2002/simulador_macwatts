@@ -486,7 +486,10 @@
         roof: roofData || null
       };
 
-      const response = await fetch("/api/quote/email", {
+      const apiBaseUrl = (window.MACWATTS_CONFIG && window.MACWATTS_CONFIG.apiBaseUrl)
+        ? String(window.MACWATTS_CONFIG.apiBaseUrl).replace(/\/+$/, "")
+        : "";
+      const response = await fetch(`${apiBaseUrl}/api/quote/email`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
