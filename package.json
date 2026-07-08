@@ -5,7 +5,8 @@
   "main": "src/server.js",
   "scripts": {
     "build": "node scripts/build-amplify.js",
-    "check": "node --check src/server.js && node --check src/services/quoteEmailService.js && node --check src/services/supabaseSimulationService.js",
+    "check": "node --check src/app.js && node --check src/server.js && node --check src/lambda.js && node --check src/services/quoteEmailService.js && node --check src/services/supabaseSimulationService.js",
+    "package:lambda": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/package-lambda.ps1",
     "start": "node src/server.js",
     "dev": "node --watch src/server.js"
   },
@@ -13,6 +14,7 @@
     "node": ">=18"
   },
   "dependencies": {
+    "@vendia/serverless-express": "^4.12.6",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "nodemailer": "^9.0.3"

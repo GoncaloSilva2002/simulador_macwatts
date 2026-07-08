@@ -6,7 +6,9 @@ const root = path.join(__dirname, "..");
 const publicDir = path.join(root, "public");
 const distDir = path.join(root, "dist");
 
+run("node", ["--check", path.join(root, "src", "app.js")]);
 run("node", ["--check", path.join(root, "src", "server.js")]);
+run("node", ["--check", path.join(root, "src", "lambda.js")]);
 run("node", ["--check", path.join(root, "src", "services", "quoteEmailService.js")]);
 run("node", ["--check", path.join(root, "src", "services", "supabaseSimulationService.js")]);
 
