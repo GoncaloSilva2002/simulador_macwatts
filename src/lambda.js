@@ -1,7 +1,7 @@
 const { sendQuoteEmail } = require("./services/quoteEmailService");
 const { saveSimulation } = require("./services/supabaseSimulationService");
 
-const LAMBDA_VERSION = "lambda-direct-v2";
+const LAMBDA_VERSION = "lambda-direct-v3";
 
 exports.handler = async (event) => {
   try {
