@@ -344,3 +344,11 @@ nextStepBtn.onclick = () => {
 };
 
 window.initMap = initMap;
+if (window.__geocodingMapInitRequested) {
+  window.__geocodingMapInitRequested = false;
+  try {
+    initMap();
+  } catch (error) {
+    console.warn("Falha ao inicializar o mapa (retry):", error);
+  }
+}
