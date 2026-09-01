@@ -57,10 +57,10 @@ async function handle(event) {
 
   try {
     await saveSimulation(request);
-    const sent = await sendQuoteEmail(request);
+    const sent = await sendQuoteEmailBestEffort(request);
     return response(200, sent
-      ? "Email enviado com sucesso para a empresa."
-      : "SMTP nao configurado: fluxo concluido em modo teste.");
+      ? "Pedido guardado na base de dados e email enviado com sucesso para a empresa."
+      : "Pedido guardado na base de dados. O email para a empresa nao foi enviado.");
   } catch (error) {
     const message = rootMessage(error);
     if (error.name === "ValidationError" || error.name === "ConfigurationError") {
@@ -99,4 +99,13 @@ function rootMessage(error) {
     current = current.cause;
   }
   return (current && current.message) || error.message || "erro desconhecido";
+}
+
+async function sendQuoteEmailBestEffort(request) {
+  try {
+    return await sendQuoteEmail(request);
+  } catch (error) {
+    console.warn("Pedido guardado, mas falhou o envio do email para a empresa:", rootMessage(error));
+    return false;
+  }
 }
