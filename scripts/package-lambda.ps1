@@ -13,7 +13,7 @@ if (Test-Path -LiteralPath $staging) {
 
 New-Item -ItemType Directory -Path $staging | Out-Null
 
-$items = @("src", "public", "node_modules", "package.json", "package-lock.json")
+$items = @("src", "node_modules", "package.json", "package-lock.json", "index.js")
 foreach ($item in $items) {
   $source = Join-Path $root $item
   if (Test-Path -LiteralPath $source) {
@@ -21,7 +21,12 @@ foreach ($item in $items) {
   }
 }
 
-Compress-Archive -Path (Join-Path $staging "*") -DestinationPath $zip -Force
+Push-Location $staging
+try {
+  tar -a -cf $zip .
+} finally {
+  Pop-Location
+}
 Remove-Item -LiteralPath $staging -Recurse -Force
 
 Write-Host "Pacote Lambda criado: $zip"
