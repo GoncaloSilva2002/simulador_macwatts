@@ -1,9 +1,11 @@
 body { margin: 0; font-family: Manrope, sans-serif; }
 #map {
-  height: 100vh;
+  position: fixed;
+  inset: 0;
+  height: 100dvh;
   width: 100%;
-  border: 15px solid #e5e7eb;
-  border-radius: 14px;
+  border: 0;
+  border-radius: 0;
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -254,4 +256,58 @@ body.drawing-mode #houseInfo,
 body.drawing-mode #message,
 body.drawing-mode #nextStepBtn {
   display: none;
+}
+
+/* Shared visual identity with the questionnaire header. */
+.shell { top: 0; left: 0; right: 0; border: 0; border-radius: 0; box-shadow: none; }
+.top-bar { box-sizing: border-box; height: 90px; padding: 0 clamp(24px, 3vw, 64px); background: #142b3b; color: #fff; border: 0; gap: 20px; }
+.top-bar .brand { position: relative; display: block; width: 168px; height: 40px; overflow: hidden; flex-shrink: 0; }
+.top-bar .brand img { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 123%; height: auto; max-width: none; }
+.header-caption { color: #d0dade; font-size: .8rem; }
+.top-bar a:focus-visible { outline: 2px solid #48dbb3; outline-offset: 5px; }
+.steps-bar { box-sizing: border-box; }
+.search-group { width: min(680px, 100%); max-width: 680px; min-width: 0; margin: 0 0 0 auto; }
+.search-group input { box-sizing: border-box; flex: 1; min-width: 0; padding: 11px 14px; border: 1px solid #d1d5db; border-radius: 5px; font: inherit; font-size: 14px; }
+.search-group button { padding: 11px 18px; border: 0; border-radius: 5px; background: #0f766e; color: white; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+.search-group input:focus-visible, .search-group button:focus-visible { outline: 2px solid #0f766e; outline-offset: 3px; }
+@media (min-width: 761px) { .panel { top: 170px; } }
+@media (max-width: 800px) {
+  .top-bar { height: 76px; flex-direction: row; align-items: center; padding: 0 20px; }
+  .top-bar .brand { width: 145px; }
+  .header-caption { max-width: 130px; text-align: right; font-size: .7rem; }
+}
+@media (max-width: 420px) {
+  .top-bar { padding: 0 18px; }
+}
+
+.top-bar .search-group input { background: #fff; color: #203347; }
+.top-bar .search-group button { background: #00b996; color: #102e2d; flex-shrink: 0; }
+.top-bar .search-group input:focus-visible, .top-bar .search-group button:focus-visible { outline-color: #48dbb3; }
+@media (max-width: 800px) {
+  .top-bar { height: auto; min-height: 76px; padding-top: 16px; padding-bottom: 16px; flex-wrap: wrap; gap: 14px; }
+  .top-bar .header-caption { margin-left: auto; }
+  .top-bar .search-group { order: 1; flex: 1 0 100%; width: 100%; max-width: none; }
+}
+@media (min-width: 761px) and (max-width: 800px) { .panel { top: 220px; } }
+
+/* Subtle blue transition beneath the navy header. */
+.steps-bar { background: #203b4d; border-bottom: 1px solid #ffffff14; }
+.steps-bar .step { color: #c2cfd8; }
+.steps-bar .step::before { background: #203b4d; border-color: #93aab9; }
+.steps-bar .step.done, .steps-bar .step.active { color: #48dbb3; }
+.steps-bar .step.done::before { background: #48dbb3; border-color: #48dbb3; }
+.steps-bar .step.active::before { background: #00b996; border-color: #00b996; box-shadow: 0 0 0 3px #00b99626; }
+
+/* Lighter brand header and softly tinted progress strip. */
+.top-bar { background: #fff; color: #203347; border-bottom: 1px solid #e3ebe7; }
+.top-bar .brand { display: inline-flex; align-items: center; width: auto; height: auto; overflow: visible; }
+.top-bar .brand img { position: static; transform: none; width: auto; height: 32px; max-width: 100%; }
+.steps-bar { background: #edf5f1; border-bottom: 1px solid #dce8e1; }
+.steps-bar .step { color: #61756c; }
+.steps-bar .step::before { background: #edf5f1; border-color: #a2b7aa; }
+.steps-bar .step.done, .steps-bar .step.active { color: #0f766e; }
+.steps-bar .step.done::before { background: #0f766e; border-color: #0f766e; }
+@media (max-width: 800px) {
+  .top-bar .brand { width: auto; }
+  .top-bar .brand img { height: 28px; }
 }
