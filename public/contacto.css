@@ -70,3 +70,7 @@ input:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid 
 .steps-bar { background: #fff; }
 .steps-bar { box-shadow: 0 0 0 100vmax #fff; }
 .steps-bar .step:not(.done):not(.active)::before { background: #fff; }
+
+.summary-row { display: flex; align-items: flex-start; gap: 12px; }
+.summary-icon { width: 19px; height: 19px; margin-top: 2px; flex: 0 0 19px; fill: none; stroke: var(--primary-strong); stroke-width: 1.65; stroke-linecap: round; stroke-linejoin: round; }
+.summary-row > span { min-width: 0; }

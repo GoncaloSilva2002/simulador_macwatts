@@ -625,9 +625,6 @@ input[type="text"] { border-radius: 5px; min-height: 44px; margin-top: 8px; back
 .calc-box > div:has(#panelsNeededText) { order: -1; display: flex; flex-direction: column; gap: 4px; padding-bottom: 18px; border-bottom: 1px solid #d8e2d9; color: #4f6758; }
 #panelsNeededText { white-space: normal; text-align: left; line-height: 1.2; font-size: clamp(1.7rem, 2.5vw, 2.25rem); font-weight: 800; letter-spacing: -.05em; }
 .calc-box h3 { order: -2; }
-.energy-details { border-top: 1px solid #d8e2d9; margin-top: 24px; padding-top: 18px; }
-.energy-details summary { font-size: .78rem; font-weight: 700; cursor: pointer; line-height: 1.6; }
-.energy-details summary:focus-visible { outline: 2px solid var(--primary-strong); outline-offset: 5px; }
 .energy-charts { margin-top: 20px; gap: 24px; }
 .chart-card { border: 0; padding: 0; }
 .chart-title { font-size: .8rem; }
@@ -824,3 +821,27 @@ input[type="text"] { border-radius: 5px; min-height: 44px; margin-top: 8px; back
 .steps-bar { background: #fff; }
 .steps-bar { box-shadow: 0 0 0 100vmax #fff; }
 .steps-bar .step:not(.done):not(.active)::before { background: #fff; }
+
+/* Full-width energy overview below the questionnaire and roof summary. */
+.energy-overview { grid-column: 1 / -1; min-width: 0; border-top: 3px solid var(--border); margin-top: 24px; padding: 44px 0 40px; }
+.energy-overview .energy-charts { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(40px, 5vw, 80px); margin-top: 32px; }
+.energy-overview .chart-title { font-size: 1rem; margin-bottom: 20px; }
+.energy-overview .chart-row { grid-template-columns: minmax(130px, .65fr) minmax(0, 1fr); gap: 16px; margin-bottom: 14px; }
+.energy-overview .chart-label { font-size: .85rem; }
+.energy-overview .chart-bar { height: 28px; }
+.energy-overview .chart-value, .energy-overview .chart-caption { font-size: .8rem; }
+.energy-overview .chart-caption-list { margin-top: 18px; gap: 6px; }
+@media (max-width: 760px) {
+  .energy-overview .energy-charts { grid-template-columns: 1fr; gap: 32px; }
+}
+@media (max-width: 420px) {
+  .energy-overview .chart-row { grid-template-columns: 1fr; gap: 6px; }
+}
+
+@media (min-width: 761px) {
+  .energy-overview .chart-card + .chart-card { border-left: 1px solid var(--border); padding-left: clamp(24px, 3vw, 48px); }
+}
+@media (max-width: 760px) {
+  .energy-overview { margin-top: 16px; padding-top: 32px; }
+  .energy-overview .chart-card + .chart-card { border-top: 1px solid var(--border); padding-top: 28px; }
+}
