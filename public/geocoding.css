@@ -311,3 +311,7 @@ body.drawing-mode #nextStepBtn {
   .top-bar .brand { width: auto; }
   .top-bar .brand img { height: 28px; }
 }
+
+/* White background for the step progress strip. */
+.steps-bar { background: #fff; }
+.steps-bar .step:not(.done):not(.active)::before { background: #fff; }

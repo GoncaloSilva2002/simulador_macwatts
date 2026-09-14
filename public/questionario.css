@@ -817,3 +817,10 @@ input[type="text"] { border-radius: 5px; min-height: 44px; margin-top: 8px; back
 }
 .top-bar { box-shadow: 0 0 0 100vmax #fff; }
 .steps-bar { box-shadow: 0 0 0 100vmax #edf5f1; }
+
+#roofPanelsWarning { font-weight: 700; }
+
+/* White background for the step progress strip. */
+.steps-bar { background: #fff; }
+.steps-bar { box-shadow: 0 0 0 100vmax #fff; }
+.steps-bar .step:not(.done):not(.active)::before { background: #fff; }

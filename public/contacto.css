@@ -1,4 +1,4 @@
-﻿:root { --primary: #00b996; --primary-strong: #0f766e; --text: #263d37; --muted: #65756f; --border: #e1e8e4; }
+:root { --primary: #00b996; --primary-strong: #0f766e; --text: #263d37; --muted: #65756f; --border: #e1e8e4; }
 * { box-sizing: border-box; font-family: "Manrope", sans-serif; }
 body { margin: 0; color: var(--text); background: #fff; min-height: 100dvh; }
 .shell { width: 100%; padding: 0 clamp(24px, 3vw, 64px); }
@@ -65,3 +65,8 @@ input:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid 
   .actions { flex-direction: column-reverse; align-items: stretch; }
   .back { padding-left: 20px; }
 }
+
+/* White background for the step progress strip. */
+.steps-bar { background: #fff; }
+.steps-bar { box-shadow: 0 0 0 100vmax #fff; }
+.steps-bar .step:not(.done):not(.active)::before { background: #fff; }
