@@ -11,7 +11,7 @@ async function createQuotePdf(request) {
   const page = pdf.getPages()[0] || pdf.addPage([960, 540]);
   // Mantém o orçamento, logótipo e rodapé, removendo o espaço branco lateral.
   // Enquadramento final: orçamento centrado na página, sem margens laterais excessivas.
-  page.setCropBox(255, 0, 530, 540);
+  page.setCropBox(255, 0, 470, 540);
   const regular = await pdf.embedFont(StandardFonts.Helvetica);
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
   const width = page.getWidth();
@@ -20,8 +20,13 @@ async function createQuotePdf(request) {
   const roof = request.roof || {};
   const value = (v) => String(v == null || v === "" ? "-" : v);
   const money = (v) => `${Number(v || 0).toFixed(2).replace(".", ",")} EUR`;
-  const production = Number(q.annualProduction || q.production || ((q.panelMonthlyKwh || 0) * (q.panelsNeeded || 0)) || 0);
-  const consumption = Number(q.monthlyKwhEstimate || q.consumption || q.annualConsumption || 0);
+  const productionMonthly = Number(q.annualProduction || q.production || ((q.panelMonthlyKwh || 0) * (q.panelsNeeded || 0)) || 0);
+  const consumptionMonthly = Number(q.monthlyKwhEstimate || q.consumption || q.annualConsumption || 0);
+  const production = productionMonthly * 12;
+  const consumption = consumptionMonthly * 12;
+  const monthlySavings = Number(q.electricitySavings || 0);
+  const annualSavings = monthlySavings * 12;
+  const savings30Years = monthlySavings * 360;
   const price = q.basePrice || q.totalPrice || q.priceLight || request.basePrice || 0;
   const form = pdf.getForm();
   const setField = (name, content) => {
@@ -37,8 +42,8 @@ async function createQuotePdf(request) {
   setField("producao", `${production.toFixed(0)} kWh`);
   setField("consumo", `${consumption.toFixed(0)} kWh`);
   setField("poupanca_mensal", money(q.electricitySavings));
-  setField("poupanca_anual", money(q.annualSavings || q.electricitySavings));
-  setField("poupanca_30_anos", money(q.savings30Years));
+  setField("poupanca_anual", money(annualSavings));
+  setField("poupanca_30_anos", money(savings30Years));
   form.flatten();
   const drawField = (x, y, content, size = 7) => page.drawText(value(content), { x, y, size, font: regular, color: navy });
   drawField(555, 457, request.clientName);
@@ -51,8 +56,8 @@ async function createQuotePdf(request) {
   drawField(370, 233, `${production.toFixed(0)} kWh`);
   drawField(370, 176, `${consumption.toFixed(0)} kWh`);
   drawField(426, 90, money(q.electricitySavings));
-  drawField(420, 76, money(q.annualSavings || q.electricitySavings));
-  drawField(463, 62, money(q.savings30Years));
+  drawField(420, 76, money(annualSavings));
+  drawField(463, 62, money(savings30Years));
   // Substitui os valores que vêm impressos no PDF-modelo.
   const snapshot = (request.questionnaire || {}).mapSnapshotBase64 || request.mapSnapshotBase64;
   if (snapshot) {
