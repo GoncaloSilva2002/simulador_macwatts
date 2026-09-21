@@ -13,7 +13,7 @@ if (Test-Path -LiteralPath $staging) {
 
 New-Item -ItemType Directory -Path $staging | Out-Null
 
-$items = @("src", "node_modules", "package.json", "package-lock.json", "index.js")
+$items = @("src", "node_modules", "public", "package.json", "package-lock.json", "index.js")
 foreach ($item in $items) {
   $source = Join-Path $root $item
   if (Test-Path -LiteralPath $source) {

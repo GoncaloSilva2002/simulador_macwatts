@@ -3,6 +3,7 @@ const path = require("path");
 
 const { sendQuoteEmail } = require("./services/quoteEmailService");
 const { saveSimulation } = require("./services/supabaseSimulationService");
+const { createQuotePdf } = require("./services/quotePdfService");
 
 function createApp() {
   const app = express();
@@ -66,6 +67,15 @@ function createApp() {
       }
       console.error("Falha inesperada ao processar o pedido de orcamento:", error);
       return res.status(500).send(`Falha no processamento: ${message}`);
+    }
+  });
+
+  app.post("/api/quote/preview", async (req, res) => {
+    try {
+      const pdf = await createQuotePdf(req.body || {});
+      res.type("application/pdf").send(pdf);
+    } catch (error) {
+      res.status(500).send(`Falha ao gerar a pré-visualização: ${rootMessage(error)}`);
     }
   });
 

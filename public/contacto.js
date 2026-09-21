@@ -83,6 +83,7 @@
   }
 
   const backBtn = document.getElementById("backBtn");
+  const previewQuoteBtn = document.getElementById("previewQuoteBtn");
   const form = document.getElementById("contactForm");
   const statusEl = document.getElementById("status");
   const sumAddress = document.getElementById("sumAddress");
@@ -100,6 +101,8 @@
   const sumUsage = document.getElementById("sumUsage");
   const sumPhase = document.getElementById("sumPhase");
   const sumBattery = document.getElementById("sumBattery");
+  const sumSavings = document.getElementById("sumSavings");
+  const sumElectricVehicle = document.getElementById("sumElectricVehicle");
   const sumPowerTerm = document.getElementById("sumPowerTerm");
 
   let roofData = loadStoredJson("roofSelection");
@@ -108,11 +111,41 @@
   let invoicePhoto = loadStoredJson("invoicePhoto");
   let invoicePdf = loadStoredJson("invoicePdf");
 
+  if (previewQuoteBtn) {
+    previewQuoteBtn.addEventListener("click", async () => {
+      const clientName = String(document.getElementById("clientName")?.value || "").trim();
+      if (!clientName) {
+        statusEl.textContent = "Preenche o nome para gerar o orçamento.";
+        return;
+      }
+      previewQuoteBtn.disabled = true;
+      statusEl.textContent = "A gerar o orçamento...";
+      try {
+        const response = await fetch(`${getApiBaseUrl()}/api/quote/preview`, {
+          method: "POST",
+          // text/plain is a CORS-safelisted content type, so this request
+          // does not require a preflight OPTIONS request.
+          headers: { "Content-Type": "text/plain" },
+          body: JSON.stringify({ clientName, addressSummary: roofData?.address || "", roof: roofData || {}, questionnaire: questionnaireData || {} })
+        });
+        if (!response.ok) throw new Error(await response.text());
+        const url = URL.createObjectURL(await response.blob());
+        window.open(url, "_blank", "noopener");
+        statusEl.textContent = "Pré-visualização gerada. O email ainda não foi enviado.";
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+      } catch (error) {
+        statusEl.textContent = `Erro ao gerar orçamento: ${error.message}`;
+      } finally {
+        previewQuoteBtn.disabled = false;
+      }
+    });
+  }
+
   function renderSummary() {
     if (roofData) {
       sumAddress.textContent = `Morada: ${roofData.address || "não disponível"}`;
       if (roofData.center && typeof roofData.center.lat === "number" && typeof roofData.center.lng === "number") {
-        sumCoords.textContent = `Coordenadas: lat ${roofData.center.lat.toFixed(6)}, lon ${roofData.center.lng.toFixed(6)}`;
+        sumCoords.textContent = `Localização (Google Maps): ${roofData.center.lat.toFixed(6)}, ${roofData.center.lng.toFixed(6)}`;
       }
       sumArea.textContent = `Área do telhado: ${(roofData.areaSqm || 0).toFixed(1)} m²`;
     }
@@ -186,6 +219,16 @@
       sumUsage.textContent = `Maior consumo: ${usageTimeLabel}`;
       sumPhase.textContent = `Tipo de contador: ${phaseLabel}`;
       sumBattery.textContent = `Bateria: ${batteryLabel}`;
+      if (sumSavings) {
+        const savings = Number(questionnaireData.electricitySavings);
+        sumSavings.textContent = `Poupança na fatura: ${Number.isFinite(savings) ? savings.toFixed(2).replace(".", ",") + " €" : "não disponível"}`;
+      }
+      if (sumElectricVehicle) {
+        const hasElectricVehicle = questionnaireData.hasElectricVehicle;
+        sumElectricVehicle.textContent = `Veículo elétrico: ${hasElectricVehicle === undefined
+          ? "não disponível"
+          : hasElectricVehicle ? "Sim" : "Não"}`;
+      }
       if (questionnaireData.powerTerm !== undefined && Number.isFinite(Number(questionnaireData.powerTerm))) {
         sumPowerTerm.textContent = `Termo de potência: ${Number(questionnaireData.powerTerm).toFixed(2)} kVA`;
       } else {
@@ -370,6 +413,12 @@
       lines.push(`Bateria: ${formatBatterySummary(questionnaireData)}`);
       lines.push(`Capacidade da bateria: ${formatBatteryCapacity(questionnaireData)}`);
     }
+    if (questionnaireData.hasElectricVehicle !== undefined) {
+      lines.push(`Veículo elétrico: ${questionnaireData.hasElectricVehicle ? "Sim" : "Não"}`);
+    }
+    if (Number.isFinite(Number(questionnaireData.electricitySavings))) {
+      lines.push(`Poupança estimada na fatura: ${Number(questionnaireData.electricitySavings).toFixed(2)} €`);
+    }
 
     if (warnings.length) {
       lines.push("");
@@ -489,7 +538,9 @@
       const response = await fetch(`${getApiBaseUrl()}/api/quote/email`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          // The Lambda parses the body as JSON regardless of this MIME type.
+          // text/plain avoids a CORS preflight on the public Function URL.
+          "Content-Type": "text/plain"
         },
         body: JSON.stringify(payload)
       });

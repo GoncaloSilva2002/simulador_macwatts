@@ -76,7 +76,16 @@
             <label class="choice"><input type="radio" name="batteryChoice" value="sim" required><span>Sim</span></label>
             <label class="choice"><input type="radio" name="batteryChoice" value="nao" required><span>Não</span></label>
           </div>
-        </fieldset></div></section><section class="form-section" aria-labelledby="section03"><h2 id="section03"><span>03</span>A sua fatura de eletricidade</h2><div class="section-fields">            <div class="invoice-attachment">
+        </fieldset>
+        <fieldset class="question">
+          <legend class="label">Tem veículo elétrico?</legend>
+          <div class="options">
+            <label class="choice"><input type="radio" name="hasElectricVehicle" value="sim" required><span>Sim</span></label>
+            <label class="choice"><input type="radio" name="hasElectricVehicle" value="nao" required><span>Não</span></label>
+          </div>
+        </fieldset>
+          </div>
+        </div></section><section class="form-section" aria-labelledby="section03"><h2 id="section03"><span>03</span>A sua fatura de eletricidade</h2><div class="section-fields">            <div class="invoice-attachment">
               <input id="invoiceCapture" type="file" accept="image/*" capture="environment" style="display:none">
               <input id="invoicePdfUpload" type="file" accept="application/pdf" style="display:none">
               <button type="button" class="back" id="openInvoiceMenu">Adicionar fatura</button>
@@ -215,6 +224,10 @@
                 <div class="chart-caption" id="chartNetworkCaption">0 kWh da rede</div>
               </div>
             </div>
+          </div>
+          <div class="savings-card" aria-live="polite">
+            <div class="savings-eyebrow">Poupança na Fatura da Eletricidade</div>
+            <div class="savings-value" id="electricitySavings">0,00 €</div>
           </div>
   </section>
         <div class="buttons">

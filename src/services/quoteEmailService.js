@@ -1,4 +1,5 @@
 const nodemailer = require("nodemailer");
+const { createQuotePdf } = require("./quotePdfService");
 
 class ConfigurationError extends Error {
   constructor(message) {
@@ -47,7 +48,7 @@ async function sendQuoteEmail(request) {
 
 async function sendQuoteViaResend(request, resendApiKey) {
   const mapSnapshot = await resolveMapSnapshot(request);
-  const attachments = buildAttachments(request, mapSnapshot, "resend");
+  const attachments = await buildAttachments(request, mapSnapshot, "resend");
   const payload = {
     from: process.env.RESEND_FROM || process.env.MAIL_FROM || "onboarding@resend.dev",
     to: [companyEmail()],
@@ -93,11 +94,11 @@ async function sendQuoteViaSmtp(request, smtp) {
     to: companyEmail(),
     subject: "Novo Pedido de Orcamento Solar",
     text: buildCompanyBody(request),
-    attachments: buildAttachments(request, mapSnapshot, "smtp")
+    attachments: await buildAttachments(request, mapSnapshot, "smtp")
   });
 }
 
-function buildAttachments(request, mapSnapshot, mode) {
+async function buildAttachments(request, mapSnapshot, mode) {
   const primary = attachmentFromBase64(
     request.invoiceAttachmentBase64,
     request.invoiceAttachmentName,
@@ -124,6 +125,12 @@ function buildAttachments(request, mapSnapshot, mode) {
   if (primary) attachments.push(primary);
   if (alt && !isSameAttachment(primary, alt)) attachments.push(alt);
   if (map) attachments.push(map);
+  const quotePdf = await createQuotePdf(request);
+  if (mode === "resend") {
+    attachments.push({ filename: "orcamento-macwatts.pdf", content: quotePdf.toString("base64"), content_type: "application/pdf" });
+  } else {
+    attachments.push({ filename: "orcamento-macwatts.pdf", content: quotePdf, contentType: "application/pdf" });
+  }
   return attachments;
 }
 

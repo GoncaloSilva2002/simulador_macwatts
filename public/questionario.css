@@ -166,6 +166,30 @@ h2 { margin: 0 0 10px; font-size: 1.25rem; letter-spacing: -.025em; }
   gap: 4px;
 }
 
+.savings-card {
+  margin-top: 24px;
+  padding: 24px;
+  border-radius: 18px;
+  background: transparent;
+  color: #0f172a;
+  border: 0;
+  text-align: center;
+  box-shadow: none;
+}
+
+.savings-eyebrow {
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.savings-value {
+  margin-top: 6px;
+  font-size: clamp(1.8rem, 5vw, 2.6rem);
+  font-weight: 800;
+}
+
+
 form {
   display: grid;
   gap: 22px;

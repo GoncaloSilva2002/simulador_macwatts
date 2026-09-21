@@ -95,6 +95,7 @@
   const chartSystemCaption = document.getElementById("chartSystemCaption");
   const chartBatteryUseCaption = document.getElementById("chartBatteryUseCaption");
   const chartNetworkCaption = document.getElementById("chartNetworkCaption");
+  const electricitySavings = document.getElementById("electricitySavings");
   const powerTermModal = document.getElementById("powerTermModal");
   const powerTermModalText = document.getElementById("powerTermModalText");
   const powerTermClose = document.getElementById("powerTermClose");
@@ -311,6 +312,8 @@
   let lastPanelsMaxByArea = null;
   let lastPanelsPlaced = null;
   let lastPanelsCapacity = null;
+  let lastBatteryCapacity = null;
+  let lastElectricitySavings = 0;
 
   if (!roofData || !roofData.center || !selectedRoofFaces.length) {
     statusEl.textContent = "Não encontrámos seleção de telhado. Volta ao passo anterior.";
@@ -475,7 +478,7 @@
     const selected = batteryChoiceInputs.find((input) => input.checked);
     if (!selected) return null;
     if (selected.value !== "sim") return "Não";
-    const capacity = getBatteryCapacityKwh(lastPanelsNeeded);
+    const capacity = lastBatteryCapacity;
     if (!capacity) {
       const panelInfo = lastPanelsNeeded ? ` (${lastPanelsNeeded} painéis)` : "";
       return `Sem bateria${panelInfo}`;
@@ -520,15 +523,14 @@
     return 26;
   }
 
-  function getBatteryCapacityKwh(panelsCount) {
-    if (!Number.isFinite(panelsCount) || panelsCount <= 0) return null;
-    if (panelsCount <= 2) return 0;
-    if (panelsCount <= 8) return 5;
-    if (panelsCount <= 12) return 10;
-    if (panelsCount <= 16) return 15;
-    if (panelsCount <= 22) return 20;
-    if (panelsCount <= 26) return 25;
-    return 25;
+  function getBatteryCapacityKwh(totalConsumptionKwh, selfConsumptionKwh) {
+    if (!Number.isFinite(totalConsumptionKwh) || !Number.isFinite(selfConsumptionKwh)) return null;
+    const dailyDeficit = Math.max(0, totalConsumptionKwh - selfConsumptionKwh) / 31;
+    if (dailyDeficit <= 0) return 0;
+    // Primeiro arredonda o défice para kWh inteiros (5,5 fica 5; 6 fica 6)
+    // e depois escolhe o escalão de bateria seguinte, sempre de 5 em 5 kWh.
+    const roundedDailyDeficit = Math.ceil(dailyDeficit - 0.5);
+    return Math.min(25, Math.ceil(roundedDailyDeficit / 5) * 5);
   }
 
   function roundToOneDecimal(value) {
@@ -570,10 +572,14 @@
     const panelPower = 0.53;
     const productionPerPanel = ZONE_PANEL_MONTHLY_KWH[currentZoneLabel] ?? DEFAULT_PANEL_MONTHLY_KWH;
     const usageTime = usageTimeInputs.find((input) => input.checked)?.value || null;
-    const usageFactor = usageTime === "manhas" ? 0.71 : usageTime === "tardes" ? 0.88 : usageTime === "noites" ? 0.28 : 0.61;
+    const usageFactor = usageTime === "manhas" ? 0.40 : usageTime === "tardes" ? 0.55 : usageTime === "noites" ? 0.28 : 0.61;
     const wantsBattery = batteryChoiceInputs.find((input) => input.checked)?.value === "sim";
     const monthlyKwhTotal = value / pricePerKwh;
     const monthlyKwhCovered = monthlyKwhTotal * usageFactor;
+    const batteryCapacityKwh = wantsBattery
+      ? getBatteryCapacityKwh(monthlyKwhTotal, monthlyKwhCovered)
+      : 0;
+    lastBatteryCapacity = batteryCapacityKwh;
     const monthlyKwhForPanels = wantsBattery ? monthlyKwhTotal : monthlyKwhCovered;
     const requiredKwp = (monthlyKwhForPanels / productionPerPanel) * panelPower;
     const requiredKwpRounded = roundToOneDecimal(requiredKwp);
@@ -618,7 +624,7 @@
     const fitKwp = roundToOneDecimal(fitPanels * panelPower);
     panelsNeededText.textContent = `${fitPanels} painéis (${fitKwp.toFixed(1)} kWp)`;
     if (batteryCapacityText) {
-      const capacity = wantsBattery ? getBatteryCapacityKwh(fitPanels) : 0;
+      const capacity = batteryCapacityKwh;
       batteryCapacityText.textContent = capacity > 0 ? `${capacity} kWh` : "Sem bateria";
     }
     lastPanelsNeeded = fitPanels;
@@ -650,8 +656,8 @@
 	    // Bateria: sem perdas/eficiências (pedido), apenas limite de carga (SOC máx ~90%).
 	    // - "para a bateria" = energia carregada a partir do excedente
 	    // - "da bateria" = energia entregue ao consumo (igual à carregada)
-		    const batteryCapacityKwh = wantsBattery ? (getBatteryCapacityKwh(fitPanels) || 0) : 0;
-	    const batteryChargeMaxMonthly = wantsBattery ? (batteryCapacityKwh * batteryMaxChargeFraction) * 30 : 0;
+    const batteryCapacityForCalculation = wantsBattery ? (batteryCapacityKwh || 0) : 0;
+    const batteryChargeMaxMonthly = wantsBattery ? (batteryCapacityForCalculation * batteryMaxChargeFraction) * 30 : 0;
 	    const batteryChargeNeededMonthly = wantsBattery ? Math.max(0, consumoTotal - homeFromCoveredBase) : 0;
 	    const batteryChargedMonthlyBase = wantsBattery
 	      ? Math.min(excedenteBase, batteryChargeMaxMonthly, batteryChargeNeededMonthly)
@@ -734,6 +740,12 @@
       : 0;
     const gridExportKwhDisplay = Math.max(0, productionKwhBase - systemKwhDisplay - batteryKwhDisplay);
     const gridImportKwhDisplay = Math.max(0, consumptionKwhBase - systemKwhDisplay - batteryKwhDisplay);
+    const savingsKwh = systemKwhDisplay + batteryKwhDisplay;
+    const estimatedSavings = savingsKwh * pricePerKwh * 0.80;
+    lastElectricitySavings = estimatedSavings;
+    if (electricitySavings) {
+      electricitySavings.textContent = `${estimatedSavings.toFixed(2).replace(".", ",")} €`;
+    }
 
     if (chartBatteryProdRow) {
       chartBatteryProdRow.style.display = wantsBattery ? "grid" : "none";
@@ -1579,6 +1591,10 @@
       const batteryOption = batteryChoiceInputs.find((input) => input.value === value);
       if (batteryOption) batteryOption.checked = true;
     }
+    if (savedQuestionnaire.hasElectricVehicle !== undefined) {
+      const vehicleOption = form.querySelector(`input[name="hasElectricVehicle"][value="${savedQuestionnaire.hasElectricVehicle ? "sim" : "nao"}"]`);
+      if (vehicleOption) vehicleOption.checked = true;
+    }
     if (savedQuestionnaire.phaseType) {
       const phaseOption = phaseTypeInputs.find((input) => input.value === savedQuestionnaire.phaseType);
       if (phaseOption) phaseOption.checked = true;
@@ -1641,14 +1657,18 @@
     const productionPerPanel = ZONE_PANEL_MONTHLY_KWH[currentZoneLabel] ?? DEFAULT_PANEL_MONTHLY_KWH;
     const usageTime = usageTimeInputs.find((input) => input.checked)?.value || null;
     const usageFactor =
-      usageTime === "manhas" ? 0.71
-      : usageTime === "tardes" ? 0.88
+      usageTime === "manhas" ? 0.40
+      : usageTime === "tardes" ? 0.55
       : usageTime === "noites" ? 0.28
       : 0.61;
     const wantsBattery = batteryChoiceInputs.find((input) => input.checked)?.value === "sim";
+    const hasElectricVehicle = formData.get("hasElectricVehicle") === "sim";
 
     const monthlyKwhEstimate = priceValueNumber / pricePerKwh;
     const monthlyKwhCoveredEstimate = monthlyKwhEstimate * usageFactor;
+    const batteryCapacityKwh = wantsBattery
+      ? getBatteryCapacityKwh(monthlyKwhEstimate, monthlyKwhCoveredEstimate)
+      : null;
     const monthlyKwhForPanels = wantsBattery ? monthlyKwhEstimate : monthlyKwhCoveredEstimate;
     const requiredKwp = (monthlyKwhForPanels / productionPerPanel) * panelPower;
     const requiredKwpRounded = roundToOneDecimal(requiredKwp);
@@ -1669,7 +1689,6 @@
       totalPanels = clampPanelsToAllowedCount(Math.min(totalPanels, placedPanels));
     }
     const requiredKva = requiredKvaFromKwp(requiredKwpRounded);
-    const batteryCapacityKwh = wantsBattery ? getBatteryCapacityKwh(totalPanels) : null;
     const panelsFitKwp = roundToOneDecimal(totalPanels * panelPower);
 
     if (powerTerm && requiredKva && powerTerm < requiredKva) {
@@ -1703,8 +1722,10 @@
       usageFactor,
       monthlyKwpNeeded,
       basePanelsNeeded,
-      batteryCapacityKwh,
+      batteryCapacityKwh: wantsBattery ? batteryCapacityKwh : null,
       hasBattery: wantsBattery,
+      hasElectricVehicle,
+      electricitySavings: lastElectricitySavings,
       phaseType,
       usageTime: usageTimeSelected,
       mapSnapshotBase64: mapSnapshot ? mapSnapshot.dataUrl : null,

@@ -1,5 +1,6 @@
 const { sendQuoteEmail } = require("./services/quoteEmailService");
 const { saveSimulation } = require("./services/supabaseSimulationService");
+const { createQuotePdf } = require("./services/quotePdfService");
 
 const LAMBDA_VERSION = "lambda-direct-v3";
 
@@ -24,6 +25,17 @@ async function handle(event) {
 
   if (method === "GET" && (path === "/" || path === "/healthz")) {
     return response(200, `ok ${LAMBDA_VERSION}`);
+  }
+
+  if (method === "POST" && path.endsWith("/api/quote/preview")) {
+    const request = parseBody(event);
+    const pdf = await createQuotePdf(request);
+    return {
+      statusCode: 200,
+      headers: { "Content-Type": "application/pdf" },
+      isBase64Encoded: true,
+      body: pdf.toString("base64")
+    };
   }
 
   if (method !== "POST" || !path.endsWith("/api/quote/email")) {
@@ -84,7 +96,6 @@ function response(statusCode, body) {
   return {
     statusCode,
     headers: {
-      "Access-Control-Allow-Origin": process.env.CORS_ORIGIN || "*",
       "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type,Authorization",
       "Content-Type": "text/plain; charset=utf-8"
