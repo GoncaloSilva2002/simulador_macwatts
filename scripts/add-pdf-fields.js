@@ -6,18 +6,18 @@ const source = path.join(__dirname, "..", "public", "base.pdf");
 const target = path.join(__dirname, "..", "public", "base-formulario.pdf");
 
 const fields = [
-  ["cliente", 560, 440, 120, 13],
-  ["data", 560, 418, 120, 13],
-  ["morada", 330, 424, 220, 13],
-  ["numero_paineis", 330, 404, 55, 13],
-  ["potencia", 330, 384, 75, 13],
-  ["inversor", 330, 364, 170, 13],
-  ["preco", 390, 333, 55, 13],
-  ["producao", 390, 216, 75, 13],
-  ["consumo", 390, 155, 75, 13],
-  ["poupanca_mensal", 440, 85, 70, 13],
-  ["poupanca_anual", 440, 67, 70, 13],
-  ["poupanca_30_anos", 440, 49, 70, 13]
+  ["cliente", 555, 457, 55, 13],
+  ["data", 550, 436, 55, 13],
+  ["morada", 355, 436, 55, 13],
+  ["numero_paineis", 375, 423, 55, 13],
+  ["potencia", 358, 409, 55, 13],
+  ["inversor", 356, 395, 55, 13],
+  ["preco", 370, 339, 55, 13],
+  ["producao", 370, 233, 55, 13],
+  ["consumo", 370, 176, 55, 13],
+  ["poupanca_mensal", 426, 90, 55, 13],
+  ["poupanca_anual", 420, 76, 55, 13],
+  ["poupanca_30_anos", 463, 62, 55, 13]
 ];
 
 (async () => {

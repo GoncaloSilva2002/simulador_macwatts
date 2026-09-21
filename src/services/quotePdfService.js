@@ -5,12 +5,13 @@ const { PDFDocument, StandardFonts, rgb } = require("pdf-lib");
 const navy = rgb(0.035, 0.09, 0.16);
 
 async function createQuotePdf(request) {
-  const files = ["amostra-apos-alteracoes-12.pdf", "amostra-apos-alteracoes.pdf"];
+  const files = ["base.pdf", "amostra-apos-alteracoes-12.pdf", "amostra-apos-alteracoes.pdf", "base-formulario.pdf"];
   const file = files.map((name) => path.join(__dirname, "..", "..", "public", name)).find(fs.existsSync);
   const pdf = file ? await PDFDocument.load(fs.readFileSync(file)) : await PDFDocument.create();
   const page = pdf.getPages()[0] || pdf.addPage([960, 540]);
-  // Recorta as margens brancas do modelo e deixa apenas o painel do orçamento.
-  page.setCropBox(285, 0, 380, 540);
+  // Mantém o orçamento, logótipo e rodapé, removendo o espaço branco lateral.
+  // Enquadramento final: orçamento centrado na página, sem margens laterais excessivas.
+  page.setCropBox(255, 0, 530, 540);
   const regular = await pdf.embedFont(StandardFonts.Helvetica);
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
   const width = page.getWidth();
@@ -22,21 +23,37 @@ async function createQuotePdf(request) {
   const production = Number(q.annualProduction || q.production || ((q.panelMonthlyKwh || 0) * (q.panelsNeeded || 0)) || 0);
   const consumption = Number(q.monthlyKwhEstimate || q.consumption || q.annualConsumption || 0);
   const price = q.basePrice || q.totalPrice || q.priceLight || request.basePrice || 0;
-  const coverValue = (x, y, w, h, content, size = 9) => {
-    page.drawRectangle({ x, y: y - 2, width: w, height: h, color: rgb(0.82, 0.93, 0.98) });
-    page.drawText(value(content), { x, y, size, font: regular, color: navy });
+  const form = pdf.getForm();
+  const setField = (name, content) => {
+    try { form.getTextField(name).setText(value(content)); } catch (error) { /* modelo sem este campo */ }
   };
+  setField("cliente", request.clientName);
+  setField("data", new Date().toLocaleDateString("pt-PT"));
+  setField("morada", roof.address || request.addressSummary);
+  setField("numero_paineis", q.panelsNeeded || 0);
+  setField("potencia", `${Number(q.panelsFitKwp || 0).toFixed(1)} kWp`);
+  setField("inversor", q.inverter || "1 x Hibrido Monofasico 3 kW");
+  setField("preco", money(price));
+  setField("producao", `${production.toFixed(0)} kWh`);
+  setField("consumo", `${consumption.toFixed(0)} kWh`);
+  setField("poupanca_mensal", money(q.electricitySavings));
+  setField("poupanca_anual", money(q.annualSavings || q.electricitySavings));
+  setField("poupanca_30_anos", money(q.savings30Years));
+  form.flatten();
+  const drawField = (x, y, content, size = 7) => page.drawText(value(content), { x, y, size, font: regular, color: navy });
+  drawField(555, 457, request.clientName);
+  drawField(550, 436, new Date().toLocaleDateString("pt-PT"));
+  drawField(355, 436, roof.address || request.addressSummary, 7);
+  drawField(375, 423, q.panelsNeeded || 0);
+  drawField(358, 409, `${Number(q.panelsFitKwp || 0).toFixed(1)} kWp`);
+  drawField(356, 395, q.inverter || "1 x Hibrido Monofasico 3 kW", 7);
+  drawField(370, 339, money(price));
+  drawField(370, 233, `${production.toFixed(0)} kWh`);
+  drawField(370, 176, `${consumption.toFixed(0)} kWh`);
+  drawField(426, 90, money(q.electricitySavings));
+  drawField(420, 76, money(q.annualSavings || q.electricitySavings));
+  drawField(463, 62, money(q.savings30Years));
   // Substitui os valores que vêm impressos no PDF-modelo.
-  coverValue(350, 458, 145, 14, request.clientName, 8);
-  coverValue(350, 442, 145, 14, roof.address || request.addressSummary, 7);
-  coverValue(350, 411, 80, 14, q.panelsNeeded || 0, 8);
-  coverValue(350, 395, 95, 14, `${Number(q.panelsFitKwp || 0).toFixed(1)} kWp`, 8);
-  coverValue(350, 379, 145, 14, q.inverter || "1 x Hibrido Monofasico 3 kW", 7);
-  coverValue(350, 305, 130, 14, money(price), 8);
-  coverValue(350, 245, 115, 14, `${production.toFixed(0)} kWh`, 8);
-  coverValue(350, 183, 115, 14, `${consumption.toFixed(0)} kWh`, 8);
-  coverValue(350, 112, 130, 14, money(q.electricitySavings), 8);
-  coverValue(350, 96, 130, 14, money(q.annualSavings || q.electricitySavings), 8);
   const snapshot = (request.questionnaire || {}).mapSnapshotBase64 || request.mapSnapshotBase64;
   if (snapshot) {
     try {
@@ -49,7 +66,7 @@ async function createQuotePdf(request) {
       console.warn("Nao foi possivel inserir a imagem do telhado:", error.message);
     }
   }
-  page.drawText(new Date().toLocaleDateString("pt-PT"), { x: width - 125, y: height - 35, size: 9, font: regular, color: navy });
+  page.drawText(new Date().toLocaleDateString("pt-PT"), { x: width - 125, y: height - 35, size: 7, font: regular, color: navy });
   return Buffer.from(await pdf.save());
 }
 
