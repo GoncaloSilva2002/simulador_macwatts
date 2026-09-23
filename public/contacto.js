@@ -259,7 +259,7 @@
       }
       if (questionnaireData && !questionnaireData.mapSnapshotBase64) {
         const storedMap = await idbGet("mapSnapshot");
-        if (storedMap) {
+        if (storedMap && storedMap.mapType === "satellite") {
           questionnaireData.mapSnapshotBase64 = storedMap.dataUrl;
           questionnaireData.mapSnapshotName = storedMap.name;
           questionnaireData.mapSnapshotMime = storedMap.mime;
@@ -457,7 +457,7 @@
     if (questionnaireData && !questionnaireData.mapSnapshotBase64) {
       try {
         const storedMap = await idbGet("mapSnapshot");
-        if (storedMap) {
+        if (storedMap && storedMap.mapType === "satellite") {
           questionnaireData.mapSnapshotBase64 = storedMap.dataUrl;
           questionnaireData.mapSnapshotName = storedMap.name;
           questionnaireData.mapSnapshotMime = storedMap.mime;

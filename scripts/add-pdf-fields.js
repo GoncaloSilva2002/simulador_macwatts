@@ -6,7 +6,7 @@ const source = path.join(__dirname, "..", "public", "base.pdf");
 const target = path.join(__dirname, "..", "public", "base-formulario.pdf");
 
 const fields = [
-  ["cliente", 555, 457, 55, 13],
+  ["cliente", 600, 457, 55, 13],
   ["data", 550, 436, 55, 13],
   ["morada", 355, 436, 55, 13],
   ["numero_paineis", 375, 423, 55, 13],

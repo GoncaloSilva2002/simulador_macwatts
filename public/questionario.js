@@ -314,6 +314,15 @@
   let lastPanelsCapacity = null;
   let lastBatteryCapacity = null;
   let lastElectricitySavings = 0;
+  let lastGraphValues = {
+    independencePct: 0,
+    homePct: 0,
+    batteryPct: 0,
+    systemPct: 0,
+    networkPct: 0,
+    batteryProductionPct: 0,
+    gridProductionPct: 0
+  };
 
   if (!roofData || !roofData.center || !selectedRoofFaces.length) {
     statusEl.textContent = "Não encontrámos seleção de telhado. Volta ao passo anterior.";
@@ -722,6 +731,20 @@
     const systemLabel = roundPct0(systemPct);
     const batteryUseLabel = wantsBattery ? roundPct0(batteryUsePct) : 0;
     const networkLabel = Math.max(0, 100 - systemLabel - batteryUseLabel);
+    // A independência energética representa todo o consumo coberto sem a rede:
+    // energia solar usada diretamente + energia fornecida pela bateria.
+    const independencePct = wantsBattery
+      ? clampPct(systemPct + batteryUsePct)
+      : clampPct(systemPct);
+    lastGraphValues = {
+      independencePct: roundPct0(independencePct),
+      homePct: homeCoveredLabel,
+      batteryPct: batteryUseLabel,
+      systemPct: systemLabel,
+      networkPct: networkLabel,
+      batteryProductionPct: batteryProdLabel,
+      gridProductionPct: gridCoveredLabel
+    };
 
     // kWh mostrados (inteiros): garantir que as somas batem certo com os totais (produção e consumo),
     // evitando erros de arredondamento.
@@ -969,8 +992,8 @@
     params.push("size=640x400");
     params.push("scale=2");
     // Nota: Google Static Maps pode bloquear "satellite/hybrid" em contas/regiões (ex.: EEE).
-    // Usamos "roadmap" para garantir que o mapa consegue ser gerado e anexado no email.
-    params.push("maptype=roadmap");
+    // Usar imagem aérea para mostrar corretamente o telhado e os painéis.
+    params.push("maptype=satellite");
     params.push(`key=${GOOGLE_MAPS_KEY}`);
 
     selectedRoofFaces.forEach((face) => {
@@ -1012,15 +1035,15 @@
     }
     const center = map.getCenter();
     const currentZoom = map.getZoom() || 0;
-    const zoom = Math.max(0, currentZoom - 4);
+    const zoom = currentZoom;
     const params = [];
     params.push(`center=${center.lat()},${center.lng()}`);
     params.push(`zoom=${zoom}`);
     params.push("size=640x400");
     params.push("scale=2");
     // Nota: Google Static Maps pode bloquear "satellite/hybrid" em contas/regiões (ex.: EEE).
-    // Usamos "roadmap" para garantir que o mapa consegue ser gerado e anexado no email.
-    params.push("maptype=roadmap");
+    // Usar imagem aérea para mostrar corretamente o telhado e os painéis.
+    params.push("maptype=satellite");
     params.push(`key=${GOOGLE_MAPS_KEY}`);
 
     selectedRoofFaces.forEach((face) => {
@@ -1069,7 +1092,8 @@
       return {
         dataUrl,
         name: "mapa-telhado.png",
-        mime: blob.type || "image/png"
+        mime: blob.type || "image/png",
+        mapType: "satellite"
       };
     } catch (error) {
       console.error("Erro ao gerar mapa estático:", error);
@@ -1697,6 +1721,10 @@
 
     const mapSnapshot = await generateMapSnapshot();
     try {
+      // Nunca reutilizar uma captura antiga (por exemplo, do mapa de ruas).
+      // Se a nova captura falhar, o contacto fica sem imagem em vez de anexar
+      // uma imagem que não corresponde ao mapa satélite atual.
+      await idbDel("mapSnapshot");
       if (mapSnapshot) {
         await idbSet("mapSnapshot", mapSnapshot);
       }
@@ -1726,6 +1754,14 @@
       hasBattery: wantsBattery,
       hasElectricVehicle,
       electricitySavings: lastElectricitySavings,
+      // Percentagem do consumo coberta diretamente pelo sistema fotovoltaico.
+      independencePct: lastGraphValues.independencePct,
+      graphHomePct: lastGraphValues.homePct,
+      graphBatteryPct: lastGraphValues.batteryPct,
+      graphSystemPct: lastGraphValues.systemPct,
+      graphNetworkPct: lastGraphValues.networkPct,
+      graphBatteryProductionPct: lastGraphValues.batteryProductionPct,
+      graphGridProductionPct: lastGraphValues.gridProductionPct,
       phaseType,
       usageTime: usageTimeSelected,
       mapSnapshotBase64: mapSnapshot ? mapSnapshot.dataUrl : null,

@@ -5,25 +5,40 @@ const { PDFDocument, StandardFonts, rgb } = require("pdf-lib");
 const navy = rgb(0.035, 0.09, 0.16);
 
 async function createQuotePdf(request) {
-  const files = ["base.pdf", "amostra-apos-alteracoes-12.pdf", "amostra-apos-alteracoes.pdf", "base-formulario.pdf"];
+  const q = request.questionnaire || {};
+  const hasBattery = q.hasBattery === true || q.hasBattery === "true" || q.hasBattery === "sim";
+  const files = hasBattery
+    ? ["baseline-com-bateria.pdf", "base-formulario.pdf", "base.pdf"]
+    : ["baseline-sem-bateria.pdf", "base-formulario.pdf", "base.pdf"];
   const file = files.map((name) => path.join(__dirname, "..", "..", "public", name)).find(fs.existsSync);
   const pdf = file ? await PDFDocument.load(fs.readFileSync(file)) : await PDFDocument.create();
   const page = pdf.getPages()[0] || pdf.addPage([960, 540]);
   // Mantém o orçamento, logótipo e rodapé, removendo o espaço branco lateral.
   // Enquadramento final: orçamento centrado na página, sem margens laterais excessivas.
-  page.setCropBox(255, 0, 470, 540);
+  // Margens laterais iguais em torno do orçamento, com fundo cinza-claro.
+  const pageBackground = rgb(0.957, 0.965, 0.973);
+  const isPortrait = page.getHeight() > page.getWidth();
+  if (!isPortrait) {
+    page.drawRectangle({ x: 255, y: 0, width: 43, height: 540, color: pageBackground });
+    page.drawRectangle({ x: 658, y: 0, width: 43, height: 540, color: pageBackground });
+    page.setCropBox(255, 0, 446, 540);
+  } else {
+    page.setCropBox(0, 0, page.getWidth(), page.getHeight());
+  }
   const regular = await pdf.embedFont(StandardFonts.Helvetica);
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
   const width = page.getWidth();
   const height = page.getHeight();
-  const q = request.questionnaire || {};
   const roof = request.roof || {};
   const value = (v) => String(v == null || v === "" ? "-" : v);
-  const money = (v) => `${Number(v || 0).toFixed(2).replace(".", ",")} EUR`;
+  const money = (v) => `${Number(v || 0).toFixed(2).replace(".", ",")} €`;
   const productionMonthly = Number(q.annualProduction || q.production || ((q.panelMonthlyKwh || 0) * (q.panelsNeeded || 0)) || 0);
   const consumptionMonthly = Number(q.monthlyKwhEstimate || q.consumption || q.annualConsumption || 0);
   const production = productionMonthly * 12;
   const consumption = consumptionMonthly * 12;
+  const independencePct = Number.isFinite(Number(q.independencePct))
+    ? Math.max(0, Math.min(100, Number(q.independencePct)))
+    : (consumption > 0 ? Math.max(0, Math.min(100, (Math.min(production, consumption) / consumption) * 100)) : 0);
   const monthlySavings = Number(q.electricitySavings || 0);
   const annualSavings = monthlySavings * 12;
   const savings30Years = monthlySavings * 360;
@@ -46,18 +61,68 @@ async function createQuotePdf(request) {
   setField("poupanca_30_anos", money(savings30Years));
   form.flatten();
   const drawField = (x, y, content, size = 7) => page.drawText(value(content), { x, y, size, font: regular, color: navy });
-  drawField(555, 457, request.clientName);
-  drawField(550, 436, new Date().toLocaleDateString("pt-PT"));
-  drawField(355, 436, roof.address || request.addressSummary, 7);
-  drawField(375, 423, q.panelsNeeded || 0);
-  drawField(358, 409, `${Number(q.panelsFitKwp || 0).toFixed(1)} kWp`);
-  drawField(356, 395, q.inverter || "1 x Hibrido Monofasico 3 kW", 7);
-  drawField(370, 339, money(price));
-  drawField(370, 233, `${production.toFixed(0)} kWh`);
-  drawField(370, 176, `${consumption.toFixed(0)} kWh`);
-  drawField(426, 90, money(q.electricitySavings));
-  drawField(420, 76, money(annualSavings));
-  drawField(463, 62, money(savings30Years));
+  if (isPortrait) {
+    const productionKwh = Math.round(productionMonthly);
+    const consumptionKwh = Math.round(consumptionMonthly);
+    const leftRows = [
+      ["Para a Habitação", Number(q.graphHomePct ?? independencePct), productionKwh * Number(q.graphHomePct ?? independencePct) / 100, rgb(0.62, 0.84, 0.38)],
+      ["Para a Rede", Number(q.graphGridProductionPct ?? (100 - independencePct)), productionKwh * Number(q.graphGridProductionPct ?? (100 - independencePct)) / 100, rgb(0.20, 0.55, 0.16)]
+    ];
+    if (hasBattery) leftRows.splice(1, 0, ["Para a Bateria", Number(q.graphBatteryProductionPct ?? 0), productionKwh * Number(q.graphBatteryProductionPct ?? 0) / 100, rgb(0.58, 0.06, 0.12)]);
+    const rightRows = [
+      ["Do Sistema Fotovoltaico", Number(q.graphSystemPct ?? independencePct), consumptionKwh * Number(q.graphSystemPct ?? independencePct) / 100, rgb(0.10, 0.68, 0.86)],
+      ["Da Rede", Number(q.graphNetworkPct ?? (100 - independencePct)), consumptionKwh * Number(q.graphNetworkPct ?? (100 - independencePct)) / 100, rgb(0.97, 0.72, 0.08)]
+    ];
+    if (hasBattery) rightRows.splice(1, 0, ["Da Bateria", Number(q.graphBatteryPct ?? 0), consumptionKwh * Number(q.graphBatteryPct ?? 0) / 100, rgb(0.58, 0.06, 0.12)]);
+    const drawGraph = (rows, labelX, barX, topY, legacyTopY) => {
+      // Aceita também a chamada antiga com um título como primeiro argumento.
+      if (typeof rows === "string") {
+        rows = labelX;
+        labelX = barX;
+        barX = topY;
+        topY = legacyTopY;
+      }
+      rows.forEach(([label, pct, kwh, color], index) => {
+        const safePct = Math.max(0, Math.min(100, Number(pct) || 0));
+        const y = topY - index * 22;
+        page.drawText(label, { x: labelX, y: y + 3, size: 6, font: regular, color: navy });
+        page.drawRectangle({ x: barX, y, width: 115, height: 12, color: rgb(0.86, 0.89, 0.87) });
+        page.drawRectangle({ x: barX, y, width: 115 * safePct / 100, height: 12, color });
+        page.drawText(`${Math.round(safePct)}%`, { x: barX + 80, y: y + 3, size: 6, font: bold, color: navy });
+      });
+    };
+    drawGraph("Destino da produção mensal", leftRows, 300, 400, 380);
+    drawGraph("Origem do consumo mensal", rightRows, 300, 400, 300);
+    drawField(418, 734, request.clientName, 9);
+    drawField(409, 700, new Date().toLocaleDateString("pt-PT"), 9);
+    const installationLayout = hasBattery
+      ? { address: [96, 681], panels: [129, 661], power: [105, 639], inverter: [98, 618] }
+      : { address: [96, 677], panels: [129, 655], power: [105, 633], inverter: [98, 611] };
+    drawField(...installationLayout.address, roof.address || request.addressSummary, 10);
+    drawField(...installationLayout.panels, q.panelsNeeded || 0, 10);
+    drawField(...installationLayout.power, `${Number(q.panelsFitKwp || 0).toFixed(1)} kWp`, 10);
+    drawField(...installationLayout.inverter, q.inverter || "1 x Hibrido Monofasico 3 kW", 10);
+    if (hasBattery) {
+      // Coordenada exclusiva do modelo com bateria.
+      drawField(189, 597, `${Number(q.batteryCapacityKwh || 0).toFixed(0)} kWh`, 10);
+    }
+    drawField(122, 526, money(price), 10);
+    drawField(130, 367, `${production.toFixed(0)} kWh`, 10);
+    drawField(130, 280, `${consumption.toFixed(0)} kWh`, 10);
+    page.drawText(`${Math.round(independencePct)}`, {
+      x: 181,
+      y: 231,
+      size: 18,
+      font: bold,
+      color: navy
+    });
+    const savingsLayout = hasBattery
+      ? { monthly: [206, 143], annual: [194, 122], lifetime: [263, 100] }
+      : { monthly: [206, 166], annual: [194, 146], lifetime: [263, 124] };
+    drawField(...savingsLayout.monthly, money(q.electricitySavings), 10);
+    drawField(...savingsLayout.annual, money(annualSavings), 10);
+    drawField(...savingsLayout.lifetime, money(savings30Years), 10);
+  }
   // Substitui os valores que vêm impressos no PDF-modelo.
   const snapshot = (request.questionnaire || {}).mapSnapshotBase64 || request.mapSnapshotBase64;
   if (snapshot) {
@@ -65,13 +130,19 @@ async function createQuotePdf(request) {
       const match = String(snapshot).match(/^data:(image\/(?:png|jpeg|jpg));base64,(.+)$/);
       const raw = match ? Buffer.from(match[2], "base64") : Buffer.from(snapshot, "base64");
       const image = match && match[1] === "image/png" ? await pdf.embedPng(raw) : await pdf.embedJpg(raw);
-      const scale = Math.min(120 / image.width, 50 / image.height);
-      page.drawImage(image, { x: 530, y: 380, width: image.width * scale, height: image.height * scale });
+      const scale = isPortrait
+        ? Math.min(165 / image.width, 105 / image.height)
+        : Math.min(120 / image.width, 50 / image.height);
+      page.drawImage(image, {
+        x: isPortrait ? 380 : 530,
+        y: isPortrait ? 580 : 380,
+        width: image.width * scale,
+        height: image.height * scale
+      });
     } catch (error) {
       console.warn("Nao foi possivel inserir a imagem do telhado:", error.message);
     }
   }
-  page.drawText(new Date().toLocaleDateString("pt-PT"), { x: width - 125, y: height - 35, size: 7, font: regular, color: navy });
   return Buffer.from(await pdf.save());
 }
 
