@@ -21,6 +21,13 @@ foreach ($item in $items) {
   }
 }
 
+# O binário Chromium deve ser fornecido por uma Lambda Layer para manter o ZIP
+# abaixo do limite de upload direto da AWS Lambda.
+$chromiumPackage = Join-Path $staging "node_modules\@sparticuz\chromium"
+if (Test-Path -LiteralPath $chromiumPackage) {
+  Remove-Item -LiteralPath $chromiumPackage -Recurse -Force
+}
+
 Push-Location $staging
 try {
   tar -a -cf $zip .

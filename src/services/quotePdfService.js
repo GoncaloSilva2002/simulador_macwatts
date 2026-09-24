@@ -7,6 +7,21 @@ const navy = rgb(0.035, 0.09, 0.16);
 async function createQuotePdf(request) {
   const q = request.questionnaire || {};
   const hasBattery = q.hasBattery === true || q.hasBattery === "true" || q.hasBattery === "sim";
+  const htmlTemplate = path.join(__dirname, "..", "..", "public", "proposta-template.html");
+  const htmlSource = fs.existsSync(htmlTemplate) ? fs.readFileSync(htmlTemplate, "utf8") : "";
+  const templateMatch = htmlSource.match(/data:image\/png;base64,([^'\"]+)/);
+  if (htmlSource && !templateMatch) {
+    return createHtmlQuotePdf(renderQuoteHtml(request));
+  }
+  // O HTML entregue pelo utilizador é uma composição estática. Usamos a imagem
+  // original como fundo e desenhamos apenas os campos variáveis por cima.
+  if (templateMatch) {
+    const pdf = await PDFDocument.create();
+    const background = await pdf.embedPng(Buffer.from(templateMatch[1], "base64"));
+    const page = pdf.addPage([background.width * 0.5, background.height * 0.5]);
+    page.drawImage(background, { x: 0, y: 0, width: page.getWidth(), height: page.getHeight() });
+    return createQuoteFromTemplate(pdf, page, request, q, hasBattery);
+  }
   const files = hasBattery
     ? ["baseline-com-bateria.pdf", "base-formulario.pdf", "base.pdf"]
     : ["baseline-sem-bateria.pdf", "base-formulario.pdf", "base.pdf"];
@@ -146,4 +161,99 @@ async function createQuotePdf(request) {
   return Buffer.from(await pdf.save());
 }
 
+async function createHtmlQuotePdf(html) {
+  let chromium;
+  try {
+    chromium = require("@sparticuz/chromium");
+  } catch (error) {
+    chromium = require("/opt/nodejs/node_modules/@sparticuz/chromium");
+  }
+  const puppeteer = require("puppeteer-core");
+  const browser = await puppeteer.launch({
+    args: chromium.args,
+    defaultViewport: chromium.defaultViewport,
+    executablePath: await chromium.executablePath(),
+    headless: chromium.headless
+  });
+  try {
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: "networkidle0" });
+    return Buffer.from(await page.pdf({ format: "A4", printBackground: true, preferCSSPageSize: true }));
+  } finally {
+    await browser.close();
+  }
+}
+
+async function createQuoteFromTemplate(pdf, page, request, q, hasBattery) {
+  const regular = await pdf.embedFont(StandardFonts.Helvetica);
+  const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
+  const navy = rgb(0.035, 0.09, 0.16);
+  const roof = request.roof || {};
+  const value = (v) => String(v == null || v === "" ? "-" : v);
+  const money = (v) => `${Number(v || 0).toFixed(2).replace(".", ",")} €`;
+  const monthlyProduction = Number(q.annualProduction || q.production || ((q.panelMonthlyKwh || 0) * (q.panelsNeeded || 0)) || 0);
+  const monthlyConsumption = Number(q.monthlyKwhEstimate || q.consumption || q.annualConsumption || 0);
+  const production = monthlyProduction * 12;
+  const consumption = monthlyConsumption * 12;
+  const savings = Number(q.electricitySavings || 0);
+  const annualSavings = savings * 12;
+  const lifetimeSavings = savings * 360;
+  const independence = Number.isFinite(Number(q.independencePct)) ? Number(q.independencePct) : (consumption ? Math.min(100, production / consumption * 100) : 0);
+  const draw = (x, y, text, size = 10, font = regular) => page.drawText(value(text), { x, y, size, font, color: navy });
+  draw(418, 734, request.clientName, 9);
+  draw(409, 700, new Date().toLocaleDateString("pt-PT"), 9);
+  draw(96, 677, roof.address || request.addressSummary, 10);
+  draw(129, 655, q.panelsNeeded || 0, 10);
+  draw(105, 633, `${Number(q.panelsFitKwp || 0).toFixed(1)} kWp`, 10);
+  draw(98, 611, q.inverter || "1 x Hibrido Monofasico 3 kW", 10);
+  if (hasBattery) draw(189, 597, `${Number(q.batteryCapacityKwh || 0).toFixed(0)} kWh`, 10);
+  draw(122, 526, money(q.basePrice || q.totalPrice || q.priceLight || request.basePrice), 10);
+  draw(130, 367, `${production.toFixed(0)} kWh`, 10);
+  draw(130, 280, `${consumption.toFixed(0)} kWh`, 10);
+  draw(181, 231, Math.round(independence), 18, bold);
+  draw(206, hasBattery ? 143 : 166, money(savings), 10);
+  draw(194, hasBattery ? 122 : 146, money(annualSavings), 10);
+  draw(263, hasBattery ? 100 : 124, money(lifetimeSavings), 10);
+  return Buffer.from(await pdf.save());
+}
+
 module.exports = { createQuotePdf };
+
+function renderQuoteHtml(request) {
+  const templatePath = path.join(__dirname, "..", "..", "public", "proposta-template.html");
+  let html = fs.readFileSync(templatePath, "utf8");
+  const q = request.questionnaire || {};
+  const roof = request.roof || {};
+  const production = Number(q.annualProduction || q.production || ((q.panelMonthlyKwh || 0) * (q.panelsNeeded || 0)) || 0) * 12;
+  const consumption = Number(q.monthlyKwhEstimate || q.consumption || q.annualConsumption || 0) * 12;
+  const monthly = Number(q.electricitySavings || 0);
+  const money = (v) => `${Number(v || 0).toFixed(0).replace(".", ",")} €`;
+  const replacements = [
+    ["Ricardo Domingos", request.clientName],
+    ["Corte AntÃ³nio Martins, 8900-067<br>Vila Nova de Cacela", roof.address || request.addressSummary],
+    ["8 painÃ©is", `${q.panelsNeeded || 0} painéis`],
+    ["4,24 kWp", `${Number(q.panelsFitKwp || 0).toFixed(2)} kWp`],
+    ["15 kWh", `${Number(q.batteryCapacityKwh || 0).toFixed(0)} kWh`],
+    ["11 439 â‚¬", money(q.basePrice || q.totalPrice || q.priceLight || request.basePrice)],
+    ["12 788 kWh", `${production.toFixed(0)} kWh`],
+    ["16 200 kWh", `${consumption.toFixed(0)} kWh`],
+    ["197 â‚¬", money(monthly)],
+    ["2 368 â‚¬", money(monthly * 12)],
+    ["71 044 â‚¬", money(monthly * 360)]
+  ];
+  for (const [from, to] of replacements) {
+    if (to != null && String(to).trim()) html = html.split(from).join(String(to));
+  }
+  const replaceEditable = (pattern, to) => {
+    html = html.replace(pattern, (match, prefix, suffix) => `${prefix}${String(to || "-")}${suffix}`);
+  };
+  replaceEditable(/(<h1[^>]*>)[\s\S]*?(<\/h1>)/, request.clientName);
+  replaceEditable(/(<small>Morada<\/small><b[^>]*>)[\s\S]*?(<\/b>)/, roof.address || request.addressSummary);
+  replaceEditable(/(<small>Pain[^<]*<\/small><b[^>]*>)[\s\S]*?(<\/b>)/, `${q.panelsNeeded || 0} painéis`);
+  replaceEditable(/(<small>Pot[^<]*<\/small><b[^>]*>)[\s\S]*?(<\/b>)/, `${Number(q.panelsFitKwp || 0).toFixed(2)} kWp`);
+  replaceEditable(/(<small>Inversor<\/small><b[^>]*>)[\s\S]*?(<\/b>)/, q.inverter || "1 × Híbrido monofásico 3,7 kWn");
+  replaceEditable(/(<small>Cap[^<]*<\/small><b[^>]*>)[\s\S]*?(<\/b>)/, `${Number(q.batteryCapacityKwh || 0).toFixed(0)} kWh`);
+  return html;
+}
+
+module.exports.renderQuoteHtml = renderQuoteHtml;

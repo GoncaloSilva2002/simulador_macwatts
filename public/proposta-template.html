@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Proposta de Energia Solar — Ricardo Domingos</title>
+<style>
+:root{--navy:#223652;--green:#08bf7c;--teal:#329f8d;--muted:#73808f;--soft:#f3f6f8;--mint:#e8f8f2;--line:#dfe5e9}
+*{box-sizing:border-box} body{margin:0;background:#eef1f3;font-family:Arial,Helvetica,sans-serif;color:#24344a}
+.page{width:1080px;min-height:1528px;margin:20px auto;background:#fff;padding:62px 66px 40px;box-shadow:0 4px 24px #0001}
+header{display:flex;justify-content:space-between;align-items:flex-start}.brand{font-size:30px;font-weight:700;letter-spacing:2px}.brand b{color:var(--green)}
+.version{text-align:right;font-size:14px;line-height:1.6}.kicker{margin-top:56px;color:#329f8d;font-weight:700;letter-spacing:7px;font-size:14px}
+h1{font-size:46px;margin:20px 0 8px}.sub{font-size:18px;color:var(--muted);font-weight:600}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);background:var(--navy);border-radius:18px;margin-top:42px;padding:32px 0;color:white}
+.metric{padding:0 36px;border-right:1px solid #ffffff25}.metric:last-child{border:0}.metric strong{display:block;color:var(--green);font-size:36px;margin-bottom:12px}.metric:last-child strong{color:#00c9ef}.metric span{font-size:15px;line-height:1.35}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:62px;margin-top:45px}.section-title{font-size:23px;font-weight:700;margin-bottom:27px}.section-title i{font-style:normal;color:var(--teal);margin-right:12px}
+.item{margin:0 0 19px 60px}.item small{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}.item b{font-size:16px;line-height:1.35}
+.pricebox{background:var(--soft);padding:25px 30px;border-radius:15px}.price{display:flex;justify-content:space-between;padding:12px 0;font-size:16px}.price b{font-size:18px}.finance{margin:20px 4px}.discount{background:var(--mint);border-radius:30px;padding:18px 28px;color:#1d755d}.discount b{color:#0a9c65}
+.energy{margin-top:45px}.diagram{position:relative;background:linear-gradient(90deg,#effbf7,#eef8f8);border:1px solid #dce9e5;border-radius:16px;padding:35px 30px 28px;min-height:250px}
+.flow{display:grid;grid-template-columns:1fr 1.15fr 1fr;align-items:center;gap:22px}.node{text-align:center}.solar-icon{font-size:65px}.house{font-size:75px}.battery{display:inline-block;border:2px solid var(--green);border-radius:18px;padding:12px 24px;background:white}
+.arrow{font-size:35px;color:var(--green);font-weight:bold}.center{text-align:center}.stats{display:flex;justify-content:space-between;margin-top:25px}.stats strong{font-size:25px}.stats small{display:block;color:var(--muted);margin-top:4px}
+.legend{text-align:right;margin-top:8px;font-size:13px}.note{font-size:12px;color:#77838e;font-style:italic;margin-top:12px}
+footer{border-top:1px solid var(--line);margin-top:18px;padding-top:22px;display:grid;grid-template-columns:repeat(3,1fr);gap:30px;font-size:13px}.contact{text-align:center;color:#78838e;margin-top:28px;font-size:13px}
+[contenteditable="true"]:hover{outline:1px dashed #19a978;outline-offset:3px}[contenteditable="true"]:focus{outline:2px solid #19a978;outline-offset:3px;background:#f6fffb}
+.toolbar{position:fixed;right:18px;top:18px;background:#17283e;color:#fff;padding:12px 16px;border-radius:10px;font-size:13px;box-shadow:0 4px 18px #0003}.toolbar button{margin-left:10px;border:0;border-radius:6px;padding:7px 10px;cursor:pointer}
+@media print{body{background:#fff}.page{margin:0;box-shadow:none}.toolbar{display:none}} @media(max-width:1100px){.page{width:100%;margin:0}.metrics{grid-template-columns:1fr 1fr}.metric{margin:10px 0}.cols{grid-template-columns:1fr}}
+</style></head>
+<body>
+<div class="toolbar">Clique em qualquer texto para editar <button onclick="window.print()">Imprimir / PDF</button></div>
+<main class="page">
+<header><div class="brand"><b>W</b> MACWATTS</div><div class="version" contenteditable="true"><b>Versão 1</b><br>30 de abril de 2026</div></header>
+<div class="kicker" contenteditable="true">PROPOSTA DE ENERGIA SOLAR</div>
+<h1 contenteditable="true">Ricardo Domingos</h1>
+<div class="sub" contenteditable="true">Sistema fotovoltaico com bateria · 4,24 kWp · 15 kWh de armazenamento</div>
+<section class="metrics">
+<div class="metric"><strong contenteditable="true">78%</strong><span contenteditable="true">Independência<br>energética</span></div>
+<div class="metric"><strong contenteditable="true">197 €</strong><span contenteditable="true">Poupança média<br>mensal</span></div>
+<div class="metric"><strong contenteditable="true">2 368 €</strong><span contenteditable="true">Poupança média<br>anual</span></div>
+<div class="metric"><strong contenteditable="true">71 044 €</strong><span contenteditable="true">Poupança acumulada<br>em 30 anos</span></div>
+</section>
+<div class="cols">
+<section><div class="section-title"><i>⌂</i>A sua instalação</div>
+<div class="item"><small>Morada</small><b contenteditable="true">Corte António Martins, 8900-067<br>Vila Nova de Cacela</b></div>
+<div class="item"><small>Painéis solares</small><b contenteditable="true">8 painéis</b></div>
+<div class="item"><small>Potência instalada</small><b contenteditable="true">4,24 kWp</b></div>
+<div class="item"><small>Inversor</small><b contenteditable="true">1 × Híbrido monofásico 3,7 kWn</b></div>
+<div class="item"><small>Capacidade da bateria</small><b contenteditable="true">15 kWh</b></div>
+</section>
+<section><div class="section-title"><i>◇</i>Preço</div>
+<div class="pricebox">
+<div class="price"><span contenteditable="true">Gama Base</span><b contenteditable="true">11 439 €</b></div>
+<div class="price"><span contenteditable="true">Gama Premium</span><b contenteditable="true">16 048 €</b></div>
+<div class="price"><span contenteditable="true">Gama Premium All-Black</span><b contenteditable="true">16 178 €</b></div>
+<div class="price"><span contenteditable="true">Sistema de backup<br><small>opcional</small></span><b contenteditable="true">905 € / 1 724 €</b></div>
+</div>
+<div class="finance" contenteditable="true">▣ &nbsp; Financiamento disponível de 24 a 120 meses</div>
+<div class="discount" contenteditable="true"><b>10% de desconto</b> em adjudicações até 29 de maio</div>
+</section></div>
+<section class="energy"><div class="section-title"><i>☀</i>Desempenho energético</div>
+<div class="diagram">
+<div class="flow">
+<div class="node"><div class="solar-icon">▱☀</div></div>
+<div class="center"><div contenteditable="true">0% &nbsp; → &nbsp; Rede elétrica</div><div class="arrow">→</div><b contenteditable="true">61% direto para casa</b><div class="arrow">↘</div><div class="battery" contenteditable="true">⚡ Bateria 15 kWh</div></div>
+<div class="node"><div class="house">⌂</div></div>
+</div>
+<div class="stats"><div><strong contenteditable="true">12 788 kWh</strong><small contenteditable="true">Produção anual<br>dos seus painéis solares</small></div><div style="text-align:right"><strong contenteditable="true">16 200 kWh</strong><small contenteditable="true">Consumo anual da habitação</small></div></div>
+<div class="legend" contenteditable="true">● 48% solar &nbsp; ● 31% bateria &nbsp; ● 21% rede</div>
+</div>
+<div class="note" contenteditable="true">Valores indicativos, tendo por base a localização geográfica da instalação e os dados de consumo fornecidos pelo cliente.</div>
+</section>
+<footer><div contenteditable="true">✓ &nbsp; Instalação por equipa<br>&nbsp;&nbsp;&nbsp;&nbsp; técnica certificada</div><div contenteditable="true">✓ &nbsp; Registo na Direção-Geral de<br>&nbsp;&nbsp;&nbsp;&nbsp; Energia e Geologia (DGEG)</div><div contenteditable="true">▤ &nbsp; Equipamentos, garantias, opcionais<br>&nbsp;&nbsp;&nbsp;&nbsp; e condições comerciais no folheto</div></footer>
+<div class="contact" contenteditable="true">www.macwatts.pt &nbsp;&nbsp; · &nbsp;&nbsp; eduardoazevedo@macwatts.pt &nbsp;&nbsp; · &nbsp;&nbsp; +351 912 897 942</div>
+</main>
+<script>
+document.addEventListener('input',()=>localStorage.setItem('proposta-html',document.querySelector('.page').innerHTML));
+const saved=localStorage.getItem('proposta-html'); if(saved) document.querySelector('.page').innerHTML=saved;
+</script></body></html>

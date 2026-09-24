@@ -79,6 +79,15 @@ function createApp() {
     }
   });
 
+  app.post("/api/quote/html", (req, res) => {
+    try {
+      const { renderQuoteHtml } = require("./services/quotePdfService");
+      res.type("html").send(renderQuoteHtml(req.body || {}));
+    } catch (error) {
+      res.status(500).send(`Falha ao gerar a proposta HTML: ${rootMessage(error)}`);
+    }
+  });
+
   app.get("*", (req, res) => {
     res.sendFile(path.join(staticDir, "geocoding.html"));
   });
