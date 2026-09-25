@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Proposta de Energia Solar — Ricardo Domingos</title>
+<style>
+:root{--navy:#223652;--green:#08bd79;--teal:#299d89;--cyan:#08bfe7;--muted:#75808e;--soft:#f3f6f8;--mint:#e8f8f1;--line:#e5e9ec}
+*{box-sizing:border-box}
+body{margin:0;background:#e9edf0;color:#23334a;font-family:Inter,Arial,Helvetica,sans-serif}
+.page{width:1080px;min-height:1528px;margin:24px auto;background:#fff;padding:62px 66px 40px;box-shadow:0 6px 30px #0002}
+header{display:flex;justify-content:space-between;align-items:flex-start;position:relative}
+.map-snapshot{position:absolute;right:0;top:60px;width:340px;height:170px;object-fit:cover;margin:0!important}
+.logo{width:340px;height:120px;object-fit:contain;object-position:left center}
+.version{text-align:right;font-size:14px;line-height:1.6;color:#657180}
+.version b{color:#25354b}
+.kicker{margin-top:43px;color:var(--teal);font-weight:800;letter-spacing:6px;font-size:14px}
+h1{font-size:46px;line-height:1;margin:22px 0 14px;letter-spacing:-1px}
+.sub{font-size:18px;color:#78828d;font-weight:600}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);background:var(--navy);border-radius:18px;margin-top:42px;padding:31px 0;color:#fff}
+.metric{padding:0 36px;border-right:1px solid #ffffff24} .metric:last-child{border:0}
+.metric strong{display:block;color:var(--green);font-size:36px;line-height:1;margin-bottom:13px} .metric:last-child strong{color:var(--cyan)}
+.metric span{font-size:15px;line-height:1.35;color:#f5f8fb}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:62px;margin-top:47px}
+.section-title{display:flex;align-items:center;font-size:23px;font-weight:800;margin-bottom:28px}
+.iconbubble{width:42px;height:42px;border-radius:50%;background:#e9f8f3;display:inline-flex;align-items:center;justify-content:center;margin-right:15px;color:var(--teal)}
+.iconbubble svg{width:23px;height:23px;stroke:currentColor;fill:none;stroke-width:2}
+.item{display:grid;grid-template-columns:32px 1fr;gap:14px;margin-bottom:18px}
+.item svg{width:22px;height:22px;stroke:#7c8793;fill:none;stroke-width:1.8;margin-top:3px}
+.item small{display:block;color:#7c8793;font-size:13px;margin-bottom:5px} .item b{font-size:16px;line-height:1.35}
+.pricebox{background:var(--soft);padding:23px 30px;border-radius:15px}
+.price{display:flex;justify-content:space-between;align-items:center;padding:10px 0;font-size:16px} .price b{font-size:18px}.price .vat{font-size:11px;color:#8a939c;font-weight:500;position:relative;top:2px;white-space:nowrap}
+.finance{display:flex;align-items:center;gap:12px;margin:20px 4px;color:#435468} .finance svg{width:21px;stroke:var(--teal);fill:none;stroke-width:2}
+.discount{background:var(--mint);border-radius:30px;padding:18px 28px;color:#3b5d55} .discount b{color:#119b68}
+.finance-pill{margin-top:18px;border:2px solid var(--green);border-radius:999px;padding:13px 20px;text-align:center;font-size:14px;font-weight:700;color:#31594d;background:#f7fffb}.energy{margin-top:42px}
+.diagram{font-family:Inter,Arial,Helvetica,sans-serif;background:linear-gradient(90deg,#effbf7,#eef8f8);border:1px solid #dbe8e4;border-radius:16px;padding:22px 28px 20px}
+.flow{display:grid;grid-template-columns:1fr 1.2fr 1fr;align-items:center;gap:14px;min-height:150px}
+.pv svg,.home svg{width:100%;height:112px} .pv svg *,.home svg *{stroke:#627687;fill:none;stroke-width:2}
+.centerflow{text-align:center;position:relative} .gridpill,.direct,.battery{display:inline-block;background:#fff;border:1px solid #b9c6cf;border-radius:20px;padding:7px 17px;font-size:13px;font-weight:700}
+.direct{border:2px solid var(--green);margin:14px 0 13px} .battery{border-color:#cbd4d9;padding:10px 20px}
+.arrowline{height:5px;background:var(--green);border-radius:4px;position:relative;margin:0 2px} .arrowline:after{content:"";position:absolute;right:-1px;top:-6px;border-left:12px solid var(--green);border-top:8px solid transparent;border-bottom:8px solid transparent}
+.stats{display:flex;justify-content:space-between;align-items:flex-end;margin-top:5px} .stats strong{font-size:25px} .stats small{display:block;color:#74818d;margin-top:5px;line-height:1.3}
+.legend{text-align:right;margin-top:8px;font-size:13px;font-weight:700} .legend .s{color:var(--green)} .legend .b{color:#29a99a} .legend .r{color:#78838e}
+.note{font-size:12px;color:#77838e;font-style:italic;margin-top:12px}
+footer{border-top:1px solid var(--line);margin-top:18px;padding-top:21px;display:grid;grid-template-columns:repeat(3,1fr);gap:30px;font-size:13px;line-height:1.35}
+.foot{display:flex;gap:10px} .foot svg{width:24px;min-width:24px;stroke:var(--teal);fill:none;stroke-width:2}
+.contact{text-align:center;color:#7a8490;margin-top:28px;font-size:13px}
+[contenteditable=true]:hover{outline:1px dashed #14a974;outline-offset:3px} [contenteditable=true]:focus{outline:2px solid #14a974;outline-offset:3px;background:#f5fffb}
+.toolbar{position:fixed;right:18px;top:18px;z-index:20;background:#17283e;color:#fff;padding:11px 14px;border-radius:10px;font-size:13px;box-shadow:0 4px 18px #0003}
+.toolbar button{margin-left:8px;border:0;border-radius:6px;padding:7px 10px;cursor:pointer}
+@page{size:A4 portrait;margin:0}
+@media print{
+  html,body{width:100%;height:1528px;margin:0;background:#fff;overflow:visible;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{zoom:0.97}
+  .page{width:1080px;height:1528px;min-height:1528px;margin:0;position:relative;left:50%;transform:translateX(-50%);padding:48px 66px 20px;background:#fff;box-shadow:none;page-break-after:avoid;display:flex;flex-direction:column}
+  footer{margin-top:auto;padding-top:12px;break-inside:avoid;page-break-inside:avoid}
+  .contact{margin-top:12px}
+  .toolbar{display:none}
+  .metrics,.cols,.energy,footer{break-inside:avoid}
+}
+@media screen and (max-width:1100px){.page{width:100%;margin:0}.metrics{grid-template-columns:1fr 1fr}.metric{margin:10px 0}.cols{grid-template-columns:1fr}}
+</style></head>
+<body>
+<div class="toolbar">Clique no texto para editar <button onclick="resetDoc()">Repor</button><button onclick="window.print()">Imprimir / PDF</button></div>
+<main class="page" id="proposal">
+<header>
+<img class="logo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAABuCAYAAAB1P8ykAAANUUlEQVR4nO2czY4bx3aAv1PNseXYQDq4SHKRQFDbXAVIYGpFJECg1iJBFgGGA8LroZ9A0hNIegLJu+w08wADcZ5A1CbIIAu3V8lm4PYuPwjcho3rkYddJ4uuJps9zZmhzJEXOh8wqGbVqapTzTr1c6o4YBiGYRiGYRiGYRiGYRiGYRiGYRiGYRiGYRiGYRiGYRiGYRiGYRiGYRiGYRiGYRiGYRiGYRiGYRiGYRiGYRiGYRiGYRiGYRiGYRiGYRiGYRiGYRiGYRiGYRiG8dsg2y4w/vph/POPP01UXeycm539/b/Mrsz06mXM/M3Eae9zL/oNvd6U+3v5lfn+Q1PUDwAQN+Wv5Oo8htGB7LyabLO8gYt45Yhirw7FIeJmH5Uf7gFFV4bibJiwI69QSUBABZAc/B6Qra3p9vgxnie4hi2rPgKeb6sxxvuD22ZhvR3/UtDYqxYIM3Cod+kf3Pzh2kw7PEY1AQXIKiMgQaOXa/P85WiC+icAKBmQAyDyjF45+NUNMd47tmYIO9F8BJqI01y8vwvcF+8eIQ7V6EFXnoJhAn4CCqpfAncpo/sgBUKCSNqttexXoR4Ad4FPgRkA82iyrTYZ7w9bMwTBx6IeoSwII/Qbdg5UowJc/BO99EKm8/MU9Yj4HDgIsTloBkApowt5/vSLGC1T8ODK42WCvgYg4o+30BzjPWNrhlCKz5ESmCe3KOIQXUAvgwiho1MLu6hHvZ+1Eg4r7aL9C3k+OBshCmgBTBt57lWK8M2vaIbxnrLNPcLM4QuHj+e93qCO9CqHqhEQ7V7MMh8h7ZEd2HHToFqM7KSrCpf3RD1Qvl5EnkksaAoKPTfbUnuM94itbpaV8hgUdboYyUs+nkKEJ0p+4pO0ji/Kvx5VG2RfsDKyV8mENb/zPm0mqPqRUoKUyzwflqlSe5su8TQZxhp68OPWCnOeqUblvsAI+DJEF4qbgUs9LqXe1IrfrdylvO4qC+EYJfXIYKHs7X9IvS9jUYf/yE8XsmdSzTaqx+1i1vHZ5ItnwITK6J6cnhwdtmX6w/Ez4GH4+Pz05OjRZWX2h+MYeEHV/gzYOz05yq/SJeR7AKTAAIhDUg7cPT05KoLcBHjcjLsuoS2j05OjT9ekJ0H3lOo7+rKpe0j/uqHbZTw9PTl60h+OvwWSa8jnbb1CW/dZfR8Z1V7y+DrvdRN62ywsKsvZ3FGI+Hhn53/TN+XHMwD1Hxwjmoq4e0tpn4Zzg2nnsV6PA87ZRWVWp3t/vq840HIGUbGQFRmhQOmm9PRKPT+bfDGh6uBTqhd90B+Oj5udqz8cj4LMLEQ9DDL15y4mVEYwpepQL4D7l+nSH45T4CXVl52zOjt+1+rwSeMva5VTG1JB1RHzVlUDLu/Ej0P+KVUbHrMczAjlftXKsxvKfdqKn4XwKauGcIfqHU1hZS+30DUMCi+DLnVaFnQfUJ0TPewPx3unJ0fZusZsSg/m2yoLoBDIEFKn8xHhhXjnD5z2nqGSFvLnCfNPEpxPQGBn8dIulEWrE6n4FAUnLEbv8kxSxMeIy2FtWW32geL05GgvjDz1KH7QkElD+Cjo8m2QuayOfarRba8/HD8HHvSH42Td6BWM7SXVl713hZHBssMkNAwhtOF50DMOurdH/riRv4sRMAu6v2J1VicY5JOW/gkwOD05Wolv5DloyadUhnDcTmvwLOj/FdVMXTTyx0GvZ8Ar4E8uac9GbHWPACDOHwsedTQ9PoUSzTwRzruRc4ygBHTG5V/Ogt7tv01Fy0SYU7pytkhwvqpH2p6nS4lZnnRnIUxaMncAwqhTy651zdadgqWhTEM4ukT+GVX771/DCGjoEbfi90Pap4RRuD8cD1oyCWtO90MHjWExwLwG4hD/zgjvZAIcnJ4cPWwv/05PjopgQPe5OAv9KrZuCO5NdACKeI3jW/+Z1vGi7jXqUIl2lfkueJD5YmS/9bsi+fjP/u/Vx3/xPxddpoAv5yMoQc4zmsaj9cjtrr0/oOoUdRl1eKclE9dp4QspuHwECnpQ65GFPB3eMqBaeiTAow3Wu7Vc0opPgCzoWcsMWjIx8MOacut3PgvhNISja+q1LQYhbC/BVjg9OcpOT46eb7PirRsCUIj4GVLil50D72Qa9gSpEq5UNEb2KPKPUZ8iftJZqvh7whzwjWXRBymQSNXhphvoGBM6xSWdfMDqbFVw0ViarHSmUG4GpGFKbzOiWopMr6XxUge4OCMkLDt51ogDFiMtrJ99U6olXQ6LWTBnvRHfFHkIOwfDm+QmDAFRjgUQkeaLzCDKF59UM1ZGdk2rQNM4/q+kWd6t23+TiM4HonMiPZ8tK/IjAPXa7Xnq4LPJF3XZ3zeiC+Dz+kPouDGrI2jO5ZvNlKpjF424enYYNQXDsiWGNR6z9dRlL5ZojSVQ1pJpGm3cSmvrkrDUteaYaomVbKjjWxMMcEa1GX7VH44n76r+GzEERIMnSAfxrX9L6miF49qn43Q5sn8Sv0lBF3JvnBs1iyvLciSUqJQ5q96SygslG88GAN814jJWO3nSiK8pWOMKDJteWK6xaw5CeK8VX9eVd2q4hsbs1dSjLqsIMjkXZ7jL6ktDOG3F159HG6i4Dfao3mNK5cT4tj8cf90fjl8Ew4hvotKbMQTIEckA0MbVCl8fgileGyfAzi9lEBC3MiUr813lHBqzQXn2u4TFmjKacX3iEBaNuO+oNodJSyZvyPwAi9miTa3vih6h487YbmcqWDWE+jlryXzeIZN3lLdL5UGbteIzLt/j3AhhQzyh2vh/SWWQMdUm+gXwfX84frztem/KEBBfHoso9HzzRc6AKaqHNL44T7lbeZH4CokASeOkuq90687vE+E8FeaIlssRV2rjkRmbjaxJCJt56uc4hINryDRJqTarXXp0eWCKVj2bUNA9exWNuKwl03xeEAw/pWOJ1jDidXucG+X05Cg/PTk6OD052guHbbVh5MCT/nD8Ypv1bfVAbRU3A32MShrHWVwUf1eEhL2mVBwXyZwoURw7Xp+/cR/tIlFy9qOMgIPSk0KJo8w9H86WOWW3ur7tDyHaRLEkhEUjrn4eUHWiLpm8kb9+bq6xi3CS2iYO4YjlRjrrD8cFq6P2dclZNaDPG/E1PxBmuGCccYcMLJdF966h+8Gmim6T0I4DqsPP51RnNI82PWFfx43NCMCsOv0VePPzZJ3QOTpC54iWGZDDzjH0QHYqz4Ge74ueE84cAr9PoNpcb7gsgu6lUdZKa54htElan0chzNf8ZXQvMQ6pRtv0Cn3b1Eu0Wo+YamlTNGSyRtpC544Zq9Yp69A7b5TT3uP81kxDONhWgT34ZVtlXcCJHiryAOntsuYnlE5+2QWHD5tndb0pGj1QjQa3bt9K/PyXFCLw84ZXo0yrvYRkbLjhpHt0rJ/vBT0HHeXWn+NW/C6V6/HuugrXnDI/p3ITvugPx/ff4iyh1iPh4kXDIoSDkHaH7sO0lMrTtfYaSNcp800RnA73qK6IFJeI1u7VbFt13+SMgJdoGh4HcfyvcTs9jv87gXkK58AfZiF6pkQF4mIp9YFQoswLml4NcWG2uL7btEE92hd1RHNT27go1nYn5rXadUTHafI6piEcNerMqZaJCfAqXJO4DrUeSVi7J1w8KMtausa0DLtxmnzVQeQx7+6UOaG63/V1l+u0PxynwTAnwFfbWhbBje4RAJghUiDEUfkmpeWiKylTFATJIXiZAKR3CPLAqz5EPM7raw2qnv/RIOaNTwVQVx7gN7blmO5ZZI/qLs0d4LDj/kwRwqZ/Pg3hVZ0pY7k8el5Hnp4czfrD8V2q+0YvgjekloVqpmlfJZhSeU/q6xl1XJM8lPGgPxzfI1wsbMm0T5PXMQ11ja4h+6s4PTl63riJ+wKgPxznITlmadiHpydHD7dZ943OCFAdrqFCSe+CG87h94U5jvlKRxLctPpvFgCK0PjtwS9lGp5y3m5qLOj4QoPb7mHwUjzpSg91ftdKyrvK68h74Zp3SMuo7s7UHpGUasSr/7rK2gvtGFAtIw46ZOqlTBr0axvUN1SeruwK3XPWv+fskrQuCq743sK7v0ul/6yV94DqXtZkgzqvhcT//s/bLrNNKrhXiCtoHPJolMQl/nsQIuQ+K42+F/8c7XwrIrEKSOQ+JYx+Z/zjC4SJEw54B+tW4/3gxmcEer1MJSoUiVUbP+D3ZyOncxw+5+KIWiBupgJo64aqq9bZ3vvOEdYw3oabNwQowGXgoPETTsXvwhz1jbtDDbzTp4LMIvWLm4hn/FOKLq5Qd+YzjLfhpjfLFSpPq/9R5CbKhwNcDzgfCBHi3Lp75RntX3c5v4+y6d0iw7iSdzEjAMxQfRr+1epAVAeiCsJTNjkHUI0Bog1umxrGdXg3M0LFE3x1d0WFAseUTQ/DNHqE+Nf8xsf9hmEYhmEYhmEYhmEYhmEYhmEYhmEYhmEYhmEYhmEYhmEYhmEYhmEYhmEYhmEYhmEYhmEYhmEYhmEYhmEYhmEYhmEYhmEYhmEYhmEYhmEYhmEYhmEYhmEYhmEYhrEt/h+iXjFWoLWfFQAAAABJRU5ErkJggg==" alt="MacWatts">
+<div class="version" contenteditable="true"><b>Versão 1</b><br>30 de abril de 2026</div>
+</header>
+
+<div class="kicker" contenteditable="true">PROPOSTA DE ENERGIA SOLAR</div>
+<h1 contenteditable="true">Ricardo Domingos</h1>
+
+
+<section class="metrics">
+<div class="metric"><strong contenteditable="true">78%</strong><span contenteditable="true">Independência<br>energética</span></div>
+<div class="metric"><strong contenteditable="true">197 €</strong><span contenteditable="true">Poupança média<br>mensal</span></div>
+<div class="metric"><strong contenteditable="true">2 368 €</strong><span contenteditable="true">Poupança média<br>anual</span></div>
+<div class="metric"><strong contenteditable="true">71 044 €</strong><span contenteditable="true">Poupança acumulada<br>em 30 anos</span></div>
+</section>
+
+<div class="cols">
+<section>
+<div class="section-title"><span class="iconbubble"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9H3z"/><path d="M9 20v-6h6v6"/></svg></span>A sua instalação</div>
+<div class="item"><svg viewBox="0 0 24 24"><path d="M12 21s6-5.4 6-11a6 6 0 10-12 0c0 5.6 6 11 6 11z"/><circle cx="12" cy="10" r="2"/></svg><div><small>Morada</small><b contenteditable="true">Corte António Martins, 8900-067<br>Vila Nova de Cacela</b></div></div>
+<div class="item"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg><div><small>Painéis solares</small><b contenteditable="true">8 painéis</b></div></div>
+<div class="item"><svg viewBox="0 0 24 24"><path d="M13 2L5 14h6l-1 8 9-13h-6z"/></svg><div><small>Potência instalada</small><b contenteditable="true">4,24 kWp</b></div></div>
+<div class="item"><svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M19 9h3M2 15h3M19 15h3"/></svg><div><small>Inversor</small><b contenteditable="true">1 × Híbrido monofásico 3,7 kWn</b></div></div>
+<div class="item"><svg viewBox="0 0 24 24"><path d="M7 7h10v10H7zM17 10h2v4h-2"/><path d="M11 9l-2 4h3l-1 3 4-5h-3l1-2"/></svg><div><small>Capacidade da bateria</small><b contenteditable="true">15 kWh</b></div></div>
+</section>
+
+<section>
+<div class="section-title"><span class="iconbubble"><svg viewBox="0 0 24 24"><path d="M20 13l-7 7L4 11V4h7z"/><circle cx="8.5" cy="8.5" r="1.5"/></svg></span>Preço</div>
+<div class="pricebox">
+<div class="price"><span contenteditable="true">Gama Base</span><b contenteditable="true">11 439 €</b></div>
+<div class="price"><span contenteditable="true">Gama Premium</span><b contenteditable="true">16 048 €</b></div>
+<div class="price"><span contenteditable="true">Gama Premium All-Black</span><b contenteditable="true">16 178 €</b></div>
+<div class="price"><span contenteditable="true">Sistema de backup<br><small>opcional</small></span><b contenteditable="true">905 € / 1 724 €</b></div>
+</div>
+<div class="finance-pill" contenteditable="true">Financiamento disponível de 24 a 120 meses</div>
+</section>
+</div>
+
+<section class="energy">
+<div class="section-title"><span class="iconbubble"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg></span>Desempenho energético</div>
+<div class="diagram">
+  <div style="font-weight:800;font-size:18px;margin-bottom:22px" contenteditable="true">Desempenho energético</div>
+
+  <div style="font-weight:800;font-size:16px;margin-bottom:16px" contenteditable="true">Produção Anual</div>
+
+  <div style="display:grid;grid-template-columns:190px 1fr 70px;gap:14px;align-items:center;margin:13px 0">
+    <div contenteditable="true"> Para a Habitação</div>
+    <div style="height:25px;background:#e2e8ec;border-radius:7px;overflow:hidden"><div id="barHome" style="height:100%;width:61%;background:#08bd79"></div></div>
+    <b id="homeValue" contenteditable="true">61%</b>
+  </div>
+  <div style="display:grid;grid-template-columns:190px 1fr 70px;gap:14px;align-items:center;margin:13px 0">
+    <div contenteditable="true">Para a Bateria</div>
+    <div style="height:25px;background:#e2e8ec;border-radius:7px;overflow:hidden"><div id="barToBattery" style="height:100%;width:39%;background:#29a99a"></div></div>
+    <b id="toBatteryValue" contenteditable="true">39%</b>
+  </div>
+  <div style="display:grid;grid-template-columns:190px 1fr 70px;gap:14px;align-items:center;margin:13px 0">
+    <div contenteditable="true">Para a Rede </div>
+    <div style="height:25px;background:#e2e8ec;border-radius:7px;overflow:hidden"><div id="barToGrid" style="height:100%;width:0%;background:#78838e"></div></div>
+    <b id="toGridValue" contenteditable="true">0%</b>
+  </div>
+
+  <div style="font-weight:800;font-size:16px;margin:30px 0 16px" contenteditable="true">Origem Consumo</div>
+
+  <div style="display:grid;grid-template-columns:190px 1fr 70px;gap:14px;align-items:center;margin:13px 0">
+    <div contenteditable="true"> Do Sistema Fotovoltaico</div>
+    <div style="height:25px;background:#e2e8ec;border-radius:7px;overflow:hidden"><div id="barSolar" style="height:100%;width:48%;background:#08bd79"></div></div>
+    <b id="solarValue" contenteditable="true">48%</b>
+  </div>
+  <div style="display:grid;grid-template-columns:190px 1fr 70px;gap:14px;align-items:center;margin:13px 0">
+    <div contenteditable="true">Da a Bateria</div>
+    <div style="height:25px;background:#e2e8ec;border-radius:7px;overflow:hidden"><div id="barBattery" style="height:100%;width:31%;background:#29a99a"></div></div>
+    <b id="batteryValue" contenteditable="true">31%</b>
+  </div>
+  <div style="display:grid;grid-template-columns:190px 1fr 70px;gap:14px;align-items:center;margin:13px 0">
+    <div contenteditable="true">Da Rede </div>
+    <div style="height:25px;background:#e2e8ec;border-radius:7px;overflow:hidden"><div id="barGrid" style="height:100%;width:21%;background:#78838e"></div></div>
+    <b id="gridValue" contenteditable="true">21%</b>
+  </div>
+</div>
+<div class="note" contenteditable="true">Valores indicativos, tendo por base a localização geográfica da instalação e os dados de consumo fornecidos pelo cliente.</div>
+</section>
+
+<footer>
+<div class="foot"><svg viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="M8 12l3 3 5-6"/></svg><span contenteditable="true">Instalação por equipa<br>técnica certificada</span></div>
+<div class="foot"><svg viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="M8 12l3 3 5-6"/></svg><span contenteditable="true">Registo na Direção-Geral de<br>Energia e Geologia (DGEG)</span></div>
+<div class="foot"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v5h5M9 12h7M9 16h7"/></svg><span contenteditable="true">Equipamentos, garantias, opcionais<br>e condições comerciais no folheto</span></div>
+</footer>
+<div class="contact" contenteditable="true">www.macwatts.pt &nbsp;&nbsp; · &nbsp;&nbsp; eduardoazevedo@macwatts.pt &nbsp;&nbsp; · &nbsp;&nbsp; +351 912 897 942</div>
+</main>
+<script>
+const KEY='macwatts-proposta-v5';
+const page=document.getElementById('proposal');
+const original=page.innerHTML;
+const saved=localStorage.getItem(KEY); if(saved) page.innerHTML=saved;
+document.addEventListener('input',()=>localStorage.setItem(KEY,page.innerHTML));
+function resetDoc(){localStorage.removeItem(KEY);page.innerHTML=original;}
+
+function numeric(id){
+  const el=document.getElementById(id);
+  return el ? parseFloat(el.innerText.replace(/\s/g,'').replace(',','.').replace(/[^\d.]/g,'')) || 0 : 0;
+}
+function updateBars(){
+  [
+    ['homeValue','barHome'],['toBatteryValue','barToBattery'],['toGridValue','barToGrid'],
+    ['solarValue','barSolar'],['batteryValue','barBattery'],['gridValue','barGrid']
+  ].forEach(([v,b])=>{
+    const bar=document.getElementById(b);
+    if(bar) bar.style.width=Math.min(Math.max(numeric(v),0),100)+'%';
+  });
+}
+document.addEventListener('input',updateBars);
+setTimeout(updateBars,0);
+</script>
+</body></html>
