@@ -256,20 +256,17 @@ async function renderQuoteHtml(request) {
     replacePrice(/(<span[^>]*>Gama Base<\/span><b[^>]*>)[\s\S]*?(<\/b>)/i, base?.basePrice);
     replacePrice(/(<span[^>]*>Gama Premium<\/span><b[^>]*>)[\s\S]*?(<\/b>)/i, standard?.basePrice);
     replacePrice(/(<span[^>]*>Gama Premium All-Black<\/span><b[^>]*>)[\s\S]*?(<\/b>)/i, premium?.basePrice);
+    if (base && premium && Number.isFinite(Number(base.backupPrice)) && Number.isFinite(Number(premium.backupPrice))) {
+      html = html.replace(/(<div class="price"><span[^>]*>Sistema de backup)[\s\S]*?(<b[^>]*>)[\s\S]*?(<\/b>)/i,
+        `$1 <small>(opcional)</small>$2${money(base.backupPrice)} / ${money(premium.backupPrice)} <small class="vat">(c/IVA)</small>$3`);
+    }
   } catch (error) { console.warn("Lista de precos do Supabase indisponivel:", error.message); }
   const roof = request.roof || {};
   const hasBattery = q.hasBattery === true || q.hasBattery === "true" || q.hasBattery === "sim";
   if (!hasBattery) {
     html = html.replace(/<div class="price"><span[^>]*>Sistema de backup[\s\S]*?<\/div>\s*/i, "");
   } else {
-    const backupPrice = q.pricing && Number.isFinite(Number(q.pricing.backupPrice)) ? q.pricing.backupPrice : null;
-    if (backupPrice != null) {
-      html = html.replace(/(<div class="price"><span[^>]*>Sistema de backup[\s\S]*?<b[^>]*>)[\s\S]*?(<\/b>)/i, `$1${money(backupPrice)} <small class="vat">(c/IVA)</small>$2`);
-    }
-    html = html.replace(/(<div class="price"><span[^>]*>Sistema de backup[\s\S]*?<b[^>]*>)([\s\S]*?)(<\/b>)/i, (match, prefix, value, suffix) => {
-      if (/class=["'][^"']*vat/i.test(value)) return match;
-      return `${prefix}${value} <small class="vat">(c/IVA)</small>${suffix}`;
-    });
+    html = html.replace(/(<div class="price"><span[^>]*>Sistema de backup)<br><small>opcional<\/small>/i, "$1 <small>(opcional)</small>");
   }
   const clientTitle = String(request.clientName || "Cliente").replace(/[<>&\"']/g, "").trim() || "Cliente";
   html = html.replace(/<title>[\s\S]*?<\/title>/i, `<title>Proposta - ${clientTitle}</title>`);
