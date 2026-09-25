@@ -246,7 +246,8 @@ async function renderQuoteHtml(request) {
   const replacePrice = (pattern, price) => {
     if (Number.isFinite(Number(price))) html = html.replace(pattern, (match, prefix, suffix) => `${prefix}${money(price)} <small class="vat">(c/IVA)</small>${suffix}`);
   };
-  const pricingInput = { panels: q.panelsNeeded, batteryKwh: q.batteryCapacityKwh || 0, backupKw: q.backupKw || 0, lightType: q.phaseType || "Monofásico" };
+  const hasBatteryForPricing = q.hasBattery === true || q.hasBattery === "true" || q.hasBattery === "sim";
+  const pricingInput = { panels: q.panelsNeeded, batteryKwh: q.batteryCapacityKwh || 0, backupKw: q.backupKw || (hasBatteryForPricing ? 3 : 0), lightType: q.phaseType || "Monofásico" };
   try {
     const [base, standard, premium] = await Promise.all([
       getQuotePricing({ ...pricingInput, gama: "Base" }),
@@ -267,6 +268,7 @@ async function renderQuoteHtml(request) {
     html = html.replace(/<div class="price"><span[^>]*>Sistema de backup[\s\S]*?<\/div>\s*/i, "");
   } else {
     html = html.replace(/(<div class="price"><span[^>]*>Sistema de backup)<br><small>opcional<\/small>/i, "$1 <small>(opcional)</small>");
+    html = html.replace(/(<span[^>]*>Sistema de backup[\s\S]*?<small>\(opcional\)<\/small>)<br>/i, "$1");
   }
   const clientTitle = String(request.clientName || "Cliente").replace(/[<>&\"']/g, "").trim() || "Cliente";
   html = html.replace(/<title>[\s\S]*?<\/title>/i, `<title>Proposta - ${clientTitle}</title>`);
