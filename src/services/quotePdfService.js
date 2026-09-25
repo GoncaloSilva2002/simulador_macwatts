@@ -8,7 +8,7 @@ const navy = rgb(0.035, 0.09, 0.16);
 async function createQuotePdf(request) {
   const q = { ...(request.questionnaire || {}) };
   try {
-    const pricing = await getQuotePricing({ panels: q.panelsNeeded, batteryKwh: q.batteryCapacityKwh || 0, backupKw: q.backupKw || 0, lightType: q.phaseType || "Monofásico", gama: q.gama || "Base" });
+    const pricing = await getQuotePricing({ panels: q.panelsNeeded, batteryKwh: q.batteryCapacityKwh || 0, backupKw: q.backupKw || (q.hasBattery ? 3 : 0), lightType: q.phaseType || "Monofásico", gama: q.gama || "Base" });
     if (pricing) Object.assign(q, { basePrice: pricing.basePrice, inverter: pricing.inverter, pricing });
   } catch (error) { console.warn("Precos/configuracao do Supabase indisponiveis:", error.message); }
   if (!q.inverter) {
@@ -70,7 +70,7 @@ async function createQuotePdf(request) {
   const height = page.getHeight();
   const roof = request.roof || {};
   const value = (v) => String(v == null || v === "" ? "-" : v);
-  const money = (v) => `${Number(v || 0).toFixed(2).replace(".", ",")} €`;
+  const money = (v) => `${formatMoney(v, 2)} €`;
   const productionMonthly = Number(q.annualProduction || q.production || ((q.panelMonthlyKwh || 0) * (q.panelsNeeded || 0)) || 0);
   const consumptionMonthly = Number(q.monthlyKwhEstimate || q.consumption || q.annualConsumption || 0);
   const production = productionMonthly * 12;
@@ -192,7 +192,7 @@ async function createQuoteFromTemplate(pdf, page, request, q, hasBattery) {
   const navy = rgb(0.035, 0.09, 0.16);
   const roof = request.roof || {};
   const value = (v) => String(v == null || v === "" ? "-" : v);
-  const money = (v) => `${Number(v || 0).toFixed(2).replace(".", ",")} €`;
+  const money = (v) => `${formatMoney(v, 2)} €`;
   const monthlyProduction = Number(q.annualProduction || q.production || ((q.panelMonthlyKwh || 0) * (q.panelsNeeded || 0)) || 0);
   const monthlyConsumption = Number(q.monthlyKwhEstimate || q.consumption || q.annualConsumption || 0);
   const production = monthlyProduction * 12;
@@ -219,15 +219,25 @@ async function createQuoteFromTemplate(pdf, page, request, q, hasBattery) {
   return Buffer.from(await pdf.save());
 }
 
+function formatMoney(value, decimals) {
+  const amount = Number(value || 0);
+  if (!Number.isFinite(amount)) return decimals ? "0,00" : "0";
+  const fixed = amount.toFixed(decimals).replace(".", ",");
+  const [integer, fraction] = fixed.split(",");
+  const grouped = integer.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  return fraction == null ? grouped : `${grouped},${fraction}`;
+}
+
 module.exports = { createQuotePdf };
 
 async function renderQuoteHtml(request) {
   const templatePath = path.join(__dirname, "..", "..", "public", "proposta-template.html");
   let html = fs.readFileSync(templatePath, "utf8");
-  const money = (v) => `${Number(v || 0).toFixed(0).replace(".", ",")} €`;
+  const money = (v) => `${formatMoney(v, 0)} €`;
   const q = { ...(request.questionnaire || {}) };
   try {
-    const pricing = await getQuotePricing({ panels: q.panelsNeeded, batteryKwh: q.batteryCapacityKwh || 0, backupKw: q.backupKw || 0, lightType: q.phaseType || "Monofásico", gama: q.gama || "Base" });
+    const hasBatteryForPricing = q.hasBattery === true || q.hasBattery === "true" || q.hasBattery === "sim";
+    const pricing = await getQuotePricing({ panels: q.panelsNeeded, batteryKwh: q.batteryCapacityKwh || 0, backupKw: q.backupKw || (hasBatteryForPricing ? 3 : 0), lightType: q.phaseType || "Monofásico", gama: q.gama || "Base" });
     if (pricing) Object.assign(q, { basePrice: pricing.basePrice, inverter: pricing.inverter, pricing });
   } catch (error) { console.warn("Precos/configuracao do Supabase indisponiveis:", error.message); }
   if (!q.inverter) {
@@ -252,6 +262,10 @@ async function renderQuoteHtml(request) {
   if (!hasBattery) {
     html = html.replace(/<div class="price"><span[^>]*>Sistema de backup[\s\S]*?<\/div>\s*/i, "");
   } else {
+    const backupPrice = q.pricing && Number.isFinite(Number(q.pricing.backupPrice)) ? q.pricing.backupPrice : null;
+    if (backupPrice != null) {
+      html = html.replace(/(<div class="price"><span[^>]*>Sistema de backup[\s\S]*?<b[^>]*>)[\s\S]*?(<\/b>)/i, `$1${money(backupPrice)} <small class="vat">(c/IVA)</small>$2`);
+    }
     html = html.replace(/(<div class="price"><span[^>]*>Sistema de backup[\s\S]*?<b[^>]*>)([\s\S]*?)(<\/b>)/i, (match, prefix, value, suffix) => {
       if (/class=["'][^"']*vat/i.test(value)) return match;
       return `${prefix}${value} <small class="vat">(c/IVA)</small>${suffix}`;
