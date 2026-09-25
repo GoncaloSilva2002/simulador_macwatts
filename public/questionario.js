@@ -1014,15 +1014,20 @@
     }
 
     let url = `https://maps.googleapis.com/maps/api/staticmap?${params.join("&")}`;
-    if (url.length > 8000 && panelPolygonsLatLng.length) {
-      const reduced = panelPolygonsLatLng.slice(0, Math.max(10, Math.floor(panelPolygonsLatLng.length / 2)));
-      const reducedParams = params.filter((param) => !param.startsWith("path=") || param.includes("14b8a6"));
-      reduced.forEach((panel) => {
-        const panelPath = buildPathParam({ color: "0x0b0b0bff", fillColor: "0x0b0b0bb3", weight: 1 }, panel);
-        if (panelPath) {
-          reducedParams.push(`path=${encodeURIComponent(panelPath)}`);
-        }
-      });
+    if (url.length > 7000 && panelPolygonsLatLng.length) {
+      const reducedParams = params.filter((param) => !param.startsWith("path="));
+      const centers = panelPolygonsLatLng.map((panel) => {
+        const points = panel || [];
+        if (!points.length) return null;
+        return {
+          lat: points.reduce((sum, point) => sum + Number(point.lat || 0), 0) / points.length,
+          lng: points.reduce((sum, point) => sum + Number(point.lng || 0), 0) / points.length
+        };
+      }).filter(Boolean);
+      if (centers.length) {
+        const markerValue = `size:tiny|color:black|${centers.map((point) => `${point.lat},${point.lng}`).join("|")}`;
+        reducedParams.push(`markers=${encodeURIComponent(markerValue)}`);
+      }
       url = `https://maps.googleapis.com/maps/api/staticmap?${reducedParams.join("&")}`;
     }
 
@@ -1046,15 +1051,6 @@
     params.push("maptype=satellite");
     params.push(`key=${GOOGLE_MAPS_KEY}`);
 
-    selectedRoofFaces.forEach((face) => {
-      const points = (face.points || []).map((point) => ({ lat: point.lat, lng: point.lng }));
-      if (points.length < 3) return;
-      const roofPath = buildPathParam({ color: "0x14b8a6ff", fillColor: "0x14b8a655", weight: 2 }, points);
-      if (roofPath) params.push(`path=${encodeURIComponent(roofPath)}`);
-    });
-
-    params.push(`markers=color:red|${roofData.center.lat},${roofData.center.lng}`);
-
     if (panelPolygonsLatLng.length) {
       const panelOptions = { color: "0x0b0b0bff", fillColor: "0x0b0b0bb3", weight: 1 };
       panelPolygonsLatLng.forEach((panel) => {
@@ -1066,15 +1062,20 @@
     }
 
     let url = `https://maps.googleapis.com/maps/api/staticmap?${params.join("&")}`;
-    if (url.length > 8000 && panelPolygonsLatLng.length) {
-      const reduced = panelPolygonsLatLng.slice(0, Math.max(10, Math.floor(panelPolygonsLatLng.length / 2)));
-      const reducedParams = params.filter((param) => !param.startsWith("path=") || param.includes("14b8a6"));
-      reduced.forEach((panel) => {
-        const panelPath = buildPathParam({ color: "0x0b0b0bff", fillColor: "0x0b0b0bb3", weight: 1 }, panel);
-        if (panelPath) {
-          reducedParams.push(`path=${encodeURIComponent(panelPath)}`);
-        }
-      });
+    if (url.length > 7000 && panelPolygonsLatLng.length) {
+      const reducedParams = params.filter((param) => !param.startsWith("path="));
+      const centers = panelPolygonsLatLng.map((panel) => {
+        const points = panel || [];
+        if (!points.length) return null;
+        return {
+          lat: points.reduce((sum, point) => sum + Number(point.lat || 0), 0) / points.length,
+          lng: points.reduce((sum, point) => sum + Number(point.lng || 0), 0) / points.length
+        };
+      }).filter(Boolean);
+      if (centers.length) {
+        const markerValue = `size:tiny|color:black|${centers.map((point) => `${point.lat},${point.lng}`).join("|")}`;
+        reducedParams.push(`markers=${encodeURIComponent(markerValue)}`);
+      }
       url = `https://maps.googleapis.com/maps/api/staticmap?${reducedParams.join("&")}`;
     }
 
@@ -1082,6 +1083,34 @@
   }
 
   async function generateMapSnapshot() {
+    if (!map || !window.html2canvas) return null;
+    const mapElement = map.getDiv();
+    const hiddenElements = Array.from(mapElement.querySelectorAll(".gm-control-active,.gm-fullscreen-control,.gm-svpc,.gm-ctrl,.gm-bundled-control"));
+    const previousDisplay = hiddenElements.map((element) => element.style.display);
+    const markerMap = roofMarker ? roofMarker.getMap() : null;
+    const roofPolygonMaps = roofPolygons.map((polygon) => polygon.getMap());
+    try {
+      hiddenElements.forEach((element) => { element.style.display = "none"; });
+      if (roofMarker) roofMarker.setMap(null);
+      roofPolygons.forEach((polygon) => polygon.setMap(null));
+      // O Google Maps pode demorar um ciclo adicional a remover o SVG/canvas
+      // dos polígonos antes de o html2canvas fazer a captura.
+      await new Promise((resolve) => setTimeout(resolve, 350));
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      const canvas = await window.html2canvas(mapElement, { useCORS: true, allowTaint: false, backgroundColor: null, scale: 1, logging: false });
+      const dataUrl = canvas.toDataURL("image/png");
+      return { dataUrl, name: "mapa-telhado.png", mime: "image/png", mapType: "satellite" };
+    } catch (error) {
+      console.error("Erro ao capturar mapa interativo:", error);
+      return null;
+    } finally {
+      hiddenElements.forEach((element, index) => { element.style.display = previousDisplay[index]; });
+      if (roofMarker && markerMap) roofMarker.setMap(markerMap);
+      roofPolygons.forEach((polygon, index) => {
+        if (roofPolygonMaps[index]) polygon.setMap(roofPolygonMaps[index]);
+      });
+    }
+    /*
     const url = buildEmailStaticMapUrl();
     if (!url) return null;
     try {
@@ -1099,6 +1128,9 @@
       console.error("Erro ao gerar mapa estático:", error);
       return null;
     }
+  }
+
+    */
   }
 
   function getPolygonOrientation(points) {

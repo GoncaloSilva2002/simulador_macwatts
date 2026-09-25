@@ -4,6 +4,7 @@ const path = require("path");
 const { sendQuoteEmail } = require("./services/quoteEmailService");
 const { saveSimulation } = require("./services/supabaseSimulationService");
 const { createQuotePdf } = require("./services/quotePdfService");
+const { getPrices } = require("./services/supabasePriceService");
 
 function createApp() {
   const app = express();
@@ -21,6 +22,7 @@ function createApp() {
   });
 
   app.use(express.json({ limit: process.env.JSON_LIMIT || "35mb" }));
+  app.use(express.text({ type: "text/plain", limit: process.env.JSON_LIMIT || "35mb" }));
   app.use(express.urlencoded({ extended: true, limit: process.env.JSON_LIMIT || "35mb" }));
   app.use(express.static(staticDir));
 
@@ -70,19 +72,24 @@ function createApp() {
     }
   });
 
+  app.get("/api/prices", async (req, res) => {
+    try { return res.json(await getPrices()); }
+    catch (error) { return res.status(error.name === "ConfigurationError" ? 503 : 500).send(rootMessage(error)); }
+  });
+
   app.post("/api/quote/preview", async (req, res) => {
     try {
-      const pdf = await createQuotePdf(req.body || {});
-      res.type("application/pdf").send(pdf);
+      const pdf = await createQuotePdf(parseBody(req.body));
+      res.type("html").send(pdf);
     } catch (error) {
       res.status(500).send(`Falha ao gerar a pré-visualização: ${rootMessage(error)}`);
     }
   });
 
-  app.post("/api/quote/html", (req, res) => {
+  app.post("/api/quote/html", async (req, res) => {
     try {
       const { renderQuoteHtml } = require("./services/quotePdfService");
-      res.type("html").send(renderQuoteHtml(req.body || {}));
+      res.type("html").send(await renderQuoteHtml(parseBody(req.body)));
     } catch (error) {
       res.status(500).send(`Falha ao gerar a proposta HTML: ${rootMessage(error)}`);
     }
@@ -101,6 +108,12 @@ function rootMessage(error) {
     current = current.cause;
   }
   return (current && current.message) || error.message || "erro desconhecido";
+}
+
+function parseBody(body) {
+  if (!body) return {};
+  if (typeof body !== "string") return body;
+  try { return JSON.parse(body); } catch (error) { return {}; }
 }
 
 async function sendQuoteEmailBestEffort(request) {

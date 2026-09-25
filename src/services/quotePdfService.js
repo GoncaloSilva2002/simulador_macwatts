@@ -1,17 +1,41 @@
 const fs = require("fs");
 const path = require("path");
 const { PDFDocument, StandardFonts, rgb } = require("pdf-lib");
+const { getPrices, getInverter, getQuotePricing } = require("./supabasePriceService");
 
 const navy = rgb(0.035, 0.09, 0.16);
 
 async function createQuotePdf(request) {
-  const q = request.questionnaire || {};
+  const q = { ...(request.questionnaire || {}) };
+  try {
+    const pricing = await getQuotePricing({ panels: q.panelsNeeded, batteryKwh: q.batteryCapacityKwh || 0, backupKw: q.backupKw || 0, lightType: q.phaseType || "Monofásico", gama: q.gama || "Base" });
+    if (pricing) Object.assign(q, { basePrice: pricing.basePrice, inverter: pricing.inverter, pricing });
+  } catch (error) { console.warn("Precos/configuracao do Supabase indisponiveis:", error.message); }
+  if (!q.inverter) {
+    try { q.inverter = await getInverter(q.panelsNeeded); } catch (error) { console.warn("Inversor do Supabase indisponivel:", error.message); }
+  }
   const hasBattery = q.hasBattery === true || q.hasBattery === "true" || q.hasBattery === "sim";
   const htmlTemplate = path.join(__dirname, "..", "..", "public", "proposta-template.html");
   const htmlSource = fs.existsSync(htmlTemplate) ? fs.readFileSync(htmlTemplate, "utf8") : "";
-  const templateMatch = htmlSource.match(/data:image\/png;base64,([^'\"]+)/);
-  if (htmlSource && !templateMatch) {
-    return createHtmlQuotePdf(renderQuoteHtml(request));
+  // O primeiro PNG do HTML é o logótipo, não uma página de fundo. O PDF usa
+  // os modelos PDF completos existentes na pasta public.
+  const templateMatch = null;
+  if (htmlSource && htmlSource.includes("contenteditable")) {
+    let htmlRequest = { ...request, questionnaire: q };
+    const mapUrl = q.mapSnapshotUrl || request.mapSnapshotUrl;
+    if (!(q.mapSnapshotBase64 || request.mapSnapshotBase64) && mapUrl) {
+      try {
+        const response = await fetch(mapUrl);
+        if (response.ok) {
+          const mime = (response.headers.get("content-type") || "image/png").split(";")[0];
+          const base64 = Buffer.from(await response.arrayBuffer()).toString("base64");
+          htmlRequest = { ...request, questionnaire: { ...q, mapSnapshotBase64: `data:${mime};base64,${base64}` } };
+        }
+      } catch (error) {
+        console.warn("Nao foi possivel descarregar a imagem de satelite:", error.message);
+      }
+    }
+    return Buffer.from(await renderQuoteHtml(htmlRequest), "utf8");
   }
   // O HTML entregue pelo utilizador é uma composição estática. Usamos a imagem
   // original como fundo e desenhamos apenas os campos variáveis por cima.
@@ -161,28 +185,6 @@ async function createQuotePdf(request) {
   return Buffer.from(await pdf.save());
 }
 
-async function createHtmlQuotePdf(html) {
-  let chromium;
-  try {
-    chromium = require("@sparticuz/chromium");
-  } catch (error) {
-    chromium = require("/opt/nodejs/node_modules/@sparticuz/chromium");
-  }
-  const puppeteer = require("puppeteer-core");
-  const browser = await puppeteer.launch({
-    args: chromium.args,
-    defaultViewport: chromium.defaultViewport,
-    executablePath: await chromium.executablePath(),
-    headless: chromium.headless
-  });
-  try {
-    const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: "networkidle0" });
-    return Buffer.from(await page.pdf({ format: "A4", printBackground: true, preferCSSPageSize: true }));
-  } finally {
-    await browser.close();
-  }
-}
 
 async function createQuoteFromTemplate(pdf, page, request, q, hasBattery) {
   const regular = await pdf.embedFont(StandardFonts.Helvetica);
@@ -219,15 +221,50 @@ async function createQuoteFromTemplate(pdf, page, request, q, hasBattery) {
 
 module.exports = { createQuotePdf };
 
-function renderQuoteHtml(request) {
+async function renderQuoteHtml(request) {
   const templatePath = path.join(__dirname, "..", "..", "public", "proposta-template.html");
   let html = fs.readFileSync(templatePath, "utf8");
-  const q = request.questionnaire || {};
+  const money = (v) => `${Number(v || 0).toFixed(0).replace(".", ",")} €`;
+  const q = { ...(request.questionnaire || {}) };
+  try {
+    const pricing = await getQuotePricing({ panels: q.panelsNeeded, batteryKwh: q.batteryCapacityKwh || 0, backupKw: q.backupKw || 0, lightType: q.phaseType || "Monofásico", gama: q.gama || "Base" });
+    if (pricing) Object.assign(q, { basePrice: pricing.basePrice, inverter: pricing.inverter, pricing });
+  } catch (error) { console.warn("Precos/configuracao do Supabase indisponiveis:", error.message); }
+  if (!q.inverter) {
+    try { q.inverter = await getInverter(q.panelsNeeded); } catch (error) { console.warn("Inversor do Supabase indisponivel:", error.message); }
+  }
+  const replacePrice = (pattern, price) => {
+    if (Number.isFinite(Number(price))) html = html.replace(pattern, (match, prefix, suffix) => `${prefix}${money(price)} <small class="vat">(c/IVA)</small>${suffix}`);
+  };
+  const pricingInput = { panels: q.panelsNeeded, batteryKwh: q.batteryCapacityKwh || 0, backupKw: q.backupKw || 0, lightType: q.phaseType || "Monofásico" };
+  try {
+    const [base, standard, premium] = await Promise.all([
+      getQuotePricing({ ...pricingInput, gama: "Base" }),
+      getQuotePricing({ ...pricingInput, gama: "Premium" }),
+      getQuotePricing({ ...pricingInput, gama: "Premium All-Black" })
+    ]);
+    replacePrice(/(<span[^>]*>Gama Base<\/span><b[^>]*>)[\s\S]*?(<\/b>)/i, base?.basePrice);
+    replacePrice(/(<span[^>]*>Gama Premium<\/span><b[^>]*>)[\s\S]*?(<\/b>)/i, standard?.basePrice);
+    replacePrice(/(<span[^>]*>Gama Premium All-Black<\/span><b[^>]*>)[\s\S]*?(<\/b>)/i, premium?.basePrice);
+  } catch (error) { console.warn("Lista de precos do Supabase indisponivel:", error.message); }
   const roof = request.roof || {};
+  const hasBattery = q.hasBattery === true || q.hasBattery === "true" || q.hasBattery === "sim";
+  if (!hasBattery) {
+    html = html.replace(/<div class="price"><span[^>]*>Sistema de backup[\s\S]*?<\/div>\s*/i, "");
+  } else {
+    html = html.replace(/(<div class="price"><span[^>]*>Sistema de backup[\s\S]*?<b[^>]*>)([\s\S]*?)(<\/b>)/i, (match, prefix, value, suffix) => {
+      if (/class=["'][^"']*vat/i.test(value)) return match;
+      return `${prefix}${value} <small class="vat">(c/IVA)</small>${suffix}`;
+    });
+  }
+  const clientTitle = String(request.clientName || "Cliente").replace(/[<>&\"']/g, "").trim() || "Cliente";
+  html = html.replace(/<title>[\s\S]*?<\/title>/i, `<title>Proposta - ${clientTitle}</title>`);
   const production = Number(q.annualProduction || q.production || ((q.panelMonthlyKwh || 0) * (q.panelsNeeded || 0)) || 0) * 12;
   const consumption = Number(q.monthlyKwhEstimate || q.consumption || q.annualConsumption || 0) * 12;
   const monthly = Number(q.electricitySavings || 0);
-  const money = (v) => `${Number(v || 0).toFixed(0).replace(".", ",")} €`;
+  const independence = Number.isFinite(Number(q.independencePct))
+    ? Math.max(0, Math.min(100, Number(q.independencePct)))
+    : (consumption ? Math.max(0, Math.min(100, production / consumption * 100)) : 0);
   const replacements = [
     ["Ricardo Domingos", request.clientName],
     ["Corte AntÃ³nio Martins, 8900-067<br>Vila Nova de Cacela", roof.address || request.addressSummary],
@@ -248,11 +285,61 @@ function renderQuoteHtml(request) {
     html = html.replace(pattern, (match, prefix, suffix) => `${prefix}${String(to || "-")}${suffix}`);
   };
   replaceEditable(/(<h1[^>]*>)[\s\S]*?(<\/h1>)/, request.clientName);
+  const proposalDate = new Date().toLocaleDateString("pt-PT", { day: "numeric", month: "long", year: "numeric" });
+  const mapSnapshot = q.mapSnapshotBase64 || request.mapSnapshotBase64 || q.mapSnapshotUrl || request.mapSnapshotUrl || "";
+  const safeMapSource = String(mapSnapshot).trim();
+  const mapImage = /^(data:image\/[\w.+-]+;base64,[\s\S]+|https?:\/\/[^\s"<>]+)$/.test(safeMapSource)
+    ? `<img class="map-snapshot" alt="Imagem de satélite da instalação" src="${safeMapSource}" style="display:block;width:340px;height:170px;object-fit:cover;margin:0;border-radius:8px;border:1px solid #dfe5e9">`
+    : "";
+  html = html.replace(/(<div class="version"[^>]*><b>[^<]*<\/b><br>)[^<]*(<\/div>)/, `$1${proposalDate}${mapImage}$2`);
   replaceEditable(/(<small>Morada<\/small><b[^>]*>)[\s\S]*?(<\/b>)/, roof.address || request.addressSummary);
   replaceEditable(/(<small>Pain[^<]*<\/small><b[^>]*>)[\s\S]*?(<\/b>)/, `${q.panelsNeeded || 0} painéis`);
   replaceEditable(/(<small>Pot[^<]*<\/small><b[^>]*>)[\s\S]*?(<\/b>)/, `${Number(q.panelsFitKwp || 0).toFixed(2)} kWp`);
   replaceEditable(/(<small>Inversor<\/small><b[^>]*>)[\s\S]*?(<\/b>)/, q.inverter || "1 × Híbrido monofásico 3,7 kWn");
   replaceEditable(/(<small>Cap[^<]*<\/small><b[^>]*>)[\s\S]*?(<\/b>)/, `${Number(q.batteryCapacityKwh || 0).toFixed(0)} kWh`);
+  const metricValues = [
+    `${Math.round(independence)}%`,
+    money(monthly),
+    money(monthly * 12),
+    money(monthly * 360)
+  ];
+  let metricIndex = 0;
+  html = html.replace(/(<div class="metric"><strong[^>]*>)[\s\S]*?(<\/strong>)/g, (match, prefix, suffix) => {
+    const replacement = metricValues[metricIndex++];
+    return replacement == null ? match : `${prefix}${replacement}${suffix}`;
+  });
+  const graphValues = {
+    homeValue: q.graphHomePct ?? independence,
+    toBatteryValue: q.graphBatteryProductionPct ?? 0,
+    toGridValue: q.graphGridProductionPct ?? Math.max(0, 100 - Number(q.graphHomePct ?? independence) - Number(q.graphBatteryProductionPct ?? 0)),
+    solarValue: q.graphSystemPct ?? independence,
+    batteryValue: q.graphBatteryPct ?? 0,
+    gridValue: q.graphNetworkPct ?? Math.max(0, 100 - Number(q.graphSystemPct ?? independence) - Number(q.graphBatteryPct ?? 0))
+  };
+  for (const [id, raw] of Object.entries(graphValues)) {
+    const pct = Math.max(0, Math.min(100, Number(raw) || 0));
+    html = html.replace(new RegExp(`(id="${id}"[^>]*>)[\\s\\S]*?(<\\/b>)`), `$1${Math.round(pct)}%$2`);
+    const barId = { homeValue: "barHome", toBatteryValue: "barToBattery", toGridValue: "barToGrid", solarValue: "barSolar", batteryValue: "barBattery", gridValue: "barGrid" }[id];
+    html = html.replace(new RegExp(`(id="${barId}"[^>]*width:)\\s*[0-9.]+%`), `$1${pct}%`);
+  }
+  if (!hasBattery) {
+    const removeGraphRow = (marker) => {
+      const markerAt = html.indexOf(marker);
+      if (markerAt < 0) return;
+      const start = html.lastIndexOf("<div style=\"display:grid", markerAt);
+      const next = html.indexOf("\n  <div style=\"display:grid", markerAt);
+      const end = next >= 0 ? next : html.indexOf("\n</div>", markerAt);
+      if (start >= 0 && end > start) html = html.slice(0, start) + html.slice(end);
+    };
+    removeGraphRow('id="barToBattery"');
+    removeGraphRow('id="barBattery"');
+    const batteryLabel = html.indexOf("<small>Cap");
+    if (batteryLabel >= 0) {
+      const itemStart = html.lastIndexOf('<div class="item">', batteryLabel);
+      const itemEnd = html.indexOf("</div></div>", batteryLabel);
+      if (itemStart >= 0 && itemEnd > itemStart) html = html.slice(0, itemStart) + html.slice(itemEnd + "</div></div>".length);
+    }
+  }
   return html;
 }
 

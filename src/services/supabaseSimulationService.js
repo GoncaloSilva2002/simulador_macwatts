@@ -7,7 +7,7 @@ class ConfigurationError extends Error {
 
 async function saveSimulation(quote) {
   const supabaseUrl = removeTrailingSlash(process.env.SUPABASE_URL || "");
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || "";
 
   if (!supabaseUrl || !serviceRoleKey) {
     throw new ConfigurationError("Supabase nao configurado. Define SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY.");

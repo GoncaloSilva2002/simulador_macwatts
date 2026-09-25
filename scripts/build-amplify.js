@@ -11,6 +11,8 @@ run("node", ["--check", path.join(root, "src", "server.js")]);
 run("node", ["--check", path.join(root, "src", "lambda.js")]);
 run("node", ["--check", path.join(root, "src", "services", "quoteEmailService.js")]);
 run("node", ["--check", path.join(root, "src", "services", "supabaseSimulationService.js")]);
+run("node", ["--check", path.join(root, "src", "services", "quotePdfService.js")]);
+run("node", ["--check", path.join(root, "src", "services", "supabasePriceService.js")]);
 
 fs.rmSync(distDir, { recursive: true, force: true });
 fs.cpSync(publicDir, distDir, { recursive: true });

@@ -32,7 +32,7 @@ async function handle(event) {
     const pdf = await createQuotePdf(request);
     return {
       statusCode: 200,
-      headers: { "Content-Type": "application/pdf" },
+      headers: { "Content-Type": "text/html; charset=utf-8" },
       isBase64Encoded: true,
       body: pdf.toString("base64")
     };

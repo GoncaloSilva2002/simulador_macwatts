@@ -125,11 +125,12 @@ async function buildAttachments(request, mapSnapshot, mode) {
   if (primary) attachments.push(primary);
   if (alt && !isSameAttachment(primary, alt)) attachments.push(alt);
   if (map) attachments.push(map);
-  const quotePdf = await createQuotePdf(request);
+  const quoteHtml = await createQuotePdf(request);
+  const quoteFilename = `proposta-${safeFilename(request.clientName)}.html`;
   if (mode === "resend") {
-    attachments.push({ filename: "orcamento-macwatts.pdf", content: quotePdf.toString("base64"), content_type: "application/pdf" });
+    attachments.push({ filename: quoteFilename, content: quoteHtml.toString("base64"), content_type: "text/html" });
   } else {
-    attachments.push({ filename: "orcamento-macwatts.pdf", content: quotePdf, contentType: "application/pdf" });
+    attachments.push({ filename: quoteFilename, content: quoteHtml, contentType: "text/html" });
   }
   return attachments;
 }
@@ -280,6 +281,11 @@ function trimOrNull(value) {
 
 function safe(value) {
   return value == null ? "" : String(value).trim();
+}
+
+function safeFilename(value) {
+  const name = safe(value).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9_-]+/g, "-").replace(/^-+|-+$/g, "");
+  return name || "cliente";
 }
 
 function formatCoord(value) {

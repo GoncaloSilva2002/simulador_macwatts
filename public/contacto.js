@@ -121,6 +121,15 @@
       previewQuoteBtn.disabled = true;
       statusEl.textContent = "A gerar o orçamento...";
       try {
+        if (!questionnaireData) questionnaireData = {};
+        if (!questionnaireData.mapSnapshotBase64) {
+          const storedMap = await idbGet("mapSnapshot");
+          if (storedMap && storedMap.mapType === "satellite" && storedMap.dataUrl) {
+            questionnaireData.mapSnapshotBase64 = storedMap.dataUrl;
+            questionnaireData.mapSnapshotName = storedMap.name;
+            questionnaireData.mapSnapshotMime = storedMap.mime;
+          }
+        }
         const response = await fetch(`${getApiBaseUrl()}/api/quote/preview`, {
           method: "POST",
           // text/plain is a CORS-safelisted content type, so this request
