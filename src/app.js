@@ -96,6 +96,15 @@ function createApp() {
     } catch (error) { return res.status(400).send(rootMessage(error)); }
   });
 
+  app.post("/api/admin/prices", async (req, res) => {
+    if (req.body?.password !== process.env.ADMIN_PRICES_PASSWORD) return res.status(401).send("Não autorizado.");
+    try {
+      if (req.body?.action === "list") return res.json(await getAdminPrices());
+      await updateAdminPrice(req.body?.table, req.body?.id, req.body?.price);
+      return res.json({ ok: true });
+    } catch (error) { return res.status(400).send(rootMessage(error)); }
+  });
+
   app.post("/api/quote/preview", async (req, res) => {
     try {
       const pdf = await createQuotePdf(parseBody(req.body));

@@ -4,7 +4,8 @@
     "AllowCredentials": false,
     "AllowHeaders": [
       "content-type",
-      "authorization"
+      "authorization",
+      "x-admin-password"
     ],
     "AllowMethods": [
       "GET",
@@ -12,7 +13,7 @@
       "OPTIONS"
     ],
     "AllowOrigins": [
-      "*"
+      "https://main.d1ewoiy1pgag7s.amplifyapp.com"
     ],
     "MaxAge": 86400
   }

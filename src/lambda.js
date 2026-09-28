@@ -21,14 +21,22 @@ async function handle(event) {
   const path = event.rawPath || event.path || "/";
 
   if (method === "OPTIONS") {
-    return response(204, "");
+    return {
+      statusCode: 204,
+      headers: {
+        "Access-Control-Allow-Origin": process.env.CORS_ORIGIN || "*",
+        "Access-Control-Allow-Methods": "GET,POST,PATCH,OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type,Authorization,X-Admin-Password"
+      },
+      body: ""
+    };
   }
 
   if (method === "GET" && (path === "/" || path === "/healthz")) {
     return response(200, `ok ${LAMBDA_VERSION}`);
   }
 
-  if (path === "/api/admin/prices" && !isAdminPriceRequest(event)) {
+  if (path === "/api/admin/prices" && method !== "POST" && !isAdminPriceRequest(event)) {
     return response(401, "Não autorizado.");
   }
   if (method === "GET" && path === "/api/admin/prices") {
@@ -36,6 +44,13 @@ async function handle(event) {
   }
   if (method === "PATCH" && path === "/api/admin/prices") {
     const request = parseBody(event);
+    await updateAdminPrice(request.table, request.id, request.price);
+    return jsonResponse(200, { ok: true });
+  }
+  if (method === "POST" && path === "/api/admin/prices") {
+    const request = parseBody(event);
+    if (!process.env.ADMIN_PRICES_PASSWORD || request.password !== process.env.ADMIN_PRICES_PASSWORD) return response(401, "Não autorizado.");
+    if (request.action === "list") return jsonResponse(200, await getAdminPrices());
     await updateAdminPrice(request.table, request.id, request.price);
     return jsonResponse(200, { ok: true });
   }
@@ -116,7 +131,6 @@ function response(statusCode, body) {
   return {
     statusCode,
     headers: {
-      "Access-Control-Allow-Origin": process.env.CORS_ORIGIN || "*",
       "Access-Control-Allow-Methods": "GET,POST,PATCH,OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type,Authorization,X-Admin-Password",
       "Content-Type": "text/plain; charset=utf-8"
@@ -128,7 +142,7 @@ function response(statusCode, body) {
 function jsonResponse(statusCode, body) {
   return {
     statusCode,
-    headers: { "Access-Control-Allow-Origin": process.env.CORS_ORIGIN || "*", "Access-Control-Allow-Methods": "GET,POST,PATCH,OPTIONS", "Access-Control-Allow-Headers": "Content-Type,Authorization,X-Admin-Password", "Content-Type": "application/json" },
+    headers: { "Access-Control-Allow-Methods": "GET,POST,PATCH,OPTIONS", "Access-Control-Allow-Headers": "Content-Type,Authorization,X-Admin-Password", "Content-Type": "application/json" },
     body: JSON.stringify(body)
   };
 }
