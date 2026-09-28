@@ -39,20 +39,30 @@ async function getQuotePricing({ panels, batteryKwh = 0, backupKw = 0, lightType
     query("gama", "select=*"),
     batteryCapacity > 0 ? query("bateria", "select=*&potencia=eq." + encodeURIComponent(batteryCapacity)) : Promise.resolve([]),
     batteryCapacity > 0 ? query("preco_bateria", "select=*&id_gama=eq." + await relatedId("gama", gama)) : Promise.resolve([]),
-    backupPower > 0 ? query("backup", "select=*&potencia=eq." + encodeURIComponent(backupPower)) : Promise.resolve([]),
+    backupPower > 0 ? query("backup", "select=*&num_paineis=eq." + encodeURIComponent(panelCount)) : Promise.resolve([]),
     backupPower > 0 ? query("preco_backup", "select=*&id_gama=eq." + await relatedId("gama", gama)) : Promise.resolve([])
   ]);
-  const config = configs.find((item) => Number(item.id_tipo_luz) === (String(lightType).toLowerCase().includes("tri") ? 2 : 1)) || configs[0];
+  const desiredLightType = String(lightType).toLowerCase().includes("tri") ? 2 : 1;
+  const matchingConfigs = configs.filter((item) => Number(item.id_tipo_luz) === desiredLightType);
+  let config = matchingConfigs[0] || configs[0];
   const gamaRow = gamas.find((item) => normalizeName(item.nome) === normalizeName(gama));
   if (!config || !gamaRow) return null;
-  const configPrice = await query("preco_configuracao", `select=*&id_configuracao=eq.${config.id}&id_gama=eq.${gamaRow.id}`);
+  let configPrice = await query("preco_configuracao", `select=*&id_configuracao=eq.${config.id}&id_gama=eq.${gamaRow.id}`);
+  for (const candidate of matchingConfigs.slice(1)) {
+    if (configPrice.length) break;
+    const candidatePrice = await query("preco_configuracao", `select=*&id_configuracao=eq.${candidate.id}&id_gama=eq.${gamaRow.id}`);
+    if (candidatePrice.length) {
+      config = candidate;
+      configPrice = candidatePrice;
+    }
+  }
   const battery = batteries[0];
   const backup = backups[0];
   const batteryPrice = battery ? batteryPrices.find((item) => Number(item.id_bateria) === Number(battery.id)) : null;
   const backupPrice = backup ? backupPrices.find((item) => Number(item.id_backup) === Number(backup.id)) : null;
   return {
     gama: gamaRow.nome,
-    basePrice: Number(configPrice[0]?.preco || 0) + Number(batteryPrice?.preco || 0) + Number(backupPrice?.preco || 0),
+    basePrice: Number(configPrice[0]?.preco || 0) + Number(batteryPrice?.preco || 0),
     inverter: config.inversor == null ? "" : `${Number(config.inversor).toFixed(2)} kW`,
     panels: Number(config.num_paineis),
     batteryPrice: Number(batteryPrice?.preco || 0),

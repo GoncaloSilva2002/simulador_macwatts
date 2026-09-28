@@ -259,14 +259,14 @@ async function renderQuoteHtml(request) {
     replacePrice(/(<span[^>]*>Gama Premium<\/span><b[^>]*>)[\s\S]*?(<\/b>)/i, standard?.basePrice);
     replacePrice(/(<span[^>]*>Gama Premium All-Black<\/span><b[^>]*>)[\s\S]*?(<\/b>)/i, premium?.basePrice);
     if (base && premium && Number.isFinite(Number(base.backupPrice)) && Number.isFinite(Number(premium.backupPrice))) {
-      html = html.replace(/(<div class="price"><span[^>]*>Sistema de backup)[\s\S]*?(<b[^>]*>)[\s\S]*?(<\/b>)/i,
-        `$1 <small>(opcional)</small>$2${money(base.backupPrice)} / ${money(premium.backupPrice)} <small class="vat">(c/IVA)</small>$3`);
+      html = html.replace(/(<div class="price(?: backup-price)?"><span[^>]*>Sistema de backup)[\s\S]*?(<\/span>)(<b[^>]*>)[\s\S]*?(<\/b>)/i,
+        `$1 <small>(opcional)</small>$2$3${money(base.backupPrice)} / ${money(premium.backupPrice)}$4`);
     }
   } catch (error) { console.warn("Lista de precos do Supabase indisponivel:", error.message); }
   const roof = request.roof || {};
   const hasBattery = q.hasBattery === true || q.hasBattery === "true" || q.hasBattery === "sim";
   if (!hasBattery) {
-    html = html.replace(/<div class="price"><span[^>]*>Sistema de backup[\s\S]*?<\/div>\s*/i, "");
+    html = html.replace(/<div class="price(?: backup-price)?"><span[^>]*>Sistema de backup[\s\S]*?<\/div>\s*/i, "");
   } else {
     html = html.replace(/(<div class="price"><span[^>]*>Sistema de backup)<br><small>opcional<\/small>/i, "$1 <small>(opcional)</small>");
     html = html.replace(/(<span[^>]*>Sistema de backup[\s\S]*?<small>\(opcional\)<\/small>)<br>/i, "$1");

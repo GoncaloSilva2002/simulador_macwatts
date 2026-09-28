@@ -7,7 +7,7 @@ async function getAdminPrices() {
     query("preco_configuracao", "select=id,preco,id_configuracao,id_gama&order=id"),
     query("bateria", "select=id,potencia&order=potencia"),
     query("preco_bateria", "select=id,preco,id_bateria,id_gama&order=id"),
-    query("backup", "select=id,potencia&order=potencia"),
+    query("backup", "select=id,nome,num_paineis&order=num_paineis"),
     query("preco_backup", "select=id,preco,id_backup,id_gama&order=id")
   ]);
 
@@ -19,7 +19,7 @@ async function getAdminPrices() {
   return [
     ...configPrices.map((row) => ({ id: row.id, table: "preco_configuracao", category: "Painéis / configuração", label: configLabel(configById.get(Number(row.id_configuracao))), gama: gamaById.get(Number(row.id_gama)) || row.id_gama, price: Number(row.preco || 0) })),
     ...batteryPrices.map((row) => ({ id: row.id, table: "preco_bateria", category: "Bateria", label: `${batteryById.get(Number(row.id_bateria))?.potencia ?? row.id_bateria} kWh`, gama: gamaById.get(Number(row.id_gama)) || row.id_gama, price: Number(row.preco || 0) })),
-    ...backupPrices.map((row) => ({ id: row.id, table: "preco_backup", category: "Backup", label: `${backupById.get(Number(row.id_backup))?.potencia ?? row.id_backup} kW`, gama: gamaById.get(Number(row.id_gama)) || row.id_gama, price: Number(row.preco || 0) }))
+    ...backupPrices.map((row) => ({ id: row.id, table: "preco_backup", category: "Backup", label: backupById.get(Number(row.id_backup))?.nome || `${backupById.get(Number(row.id_backup))?.num_paineis ?? row.id_backup} painéis`, gama: gamaById.get(Number(row.id_gama)) || row.id_gama, price: Number(row.preco || 0) }))
   ];
 }
 
