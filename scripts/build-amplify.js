@@ -17,6 +17,8 @@ run("node", ["--check", path.join(root, "src", "services", "supabasePriceService
 fs.rmSync(distDir, { recursive: true, force: true });
 fs.cpSync(publicDir, distDir, { recursive: true });
 fs.copyFileSync(path.join(publicDir, "geocoding.html"), path.join(distDir, "index.html"));
+fs.mkdirSync(path.join(distDir, "admin-precos"), { recursive: true });
+fs.copyFileSync(path.join(publicDir, "admin-precos.html"), path.join(distDir, "admin-precos", "index.html"));
 
 const defaultApiBaseUrl = "https://ikuf62mxjq5flcx2yud25t2tra0wejfh.lambda-url.eu-west-3.on.aws";
 const apiBaseUrl = (process.env.API_BASE_URL || defaultApiBaseUrl).trim().replace(/\/+$/, "");

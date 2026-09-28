@@ -10,7 +10,7 @@
 <body><main class="wrap">
   <section id="login" class="card login"><h1>Preços MacWatts</h1><p class="sub">Área reservada para atualizar os preços das propostas.</p><input id="password" type="password" placeholder="Palavra-passe" autocomplete="current-password" style="width:100%;padding:12px;border:1px solid #ccd6df;border-radius:8px"><button id="loginBtn" class="btn" style="margin-top:12px;width:100%">Entrar</button><p id="loginMessage" class="message"></p></section>
   <section id="panel" hidden><h1>Gestão de preços</h1><p class="sub">Altera um valor e guarda apenas essa linha. Os preços são aplicados às novas propostas.</p><div class="card"><div class="row head"><div>Tipo</div><div>Item</div><div>Gama</div><div>Preço (€)</div><div></div></div><div id="rows"></div><p id="message" class="message"></p></div></section>
-</main><script src="config.js"></script><script>
+</main><script src="/config.js"></script><script>
 const api=(window.MACWATTS_CONFIG?.apiBaseUrl||'').replace(/\/$/,'');let password='';
 const $=id=>document.getElementById(id);function msg(text,ok=false){$('message').textContent=text;$('message').className=ok?'message ok':'message'}
 async function load(){const r=await fetch(api+'/api/admin/prices',{headers:{'X-Admin-Password':password}});if(!r.ok)throw new Error(await r.text());const data=await r.json();$('rows').innerHTML=data.map(row=>`<div class="row"><div class="category">${esc(row.category)}</div><div>${esc(row.label)}</div><div class="muted">${esc(row.gama)}</div><div><input class="price" type="number" min="0" step="0.01" value="${row.price}" data-table="${row.table}" data-id="${row.id}"></div><button class="btn secondary save">Guardar</button></div>`).join('');document.querySelectorAll('.save').forEach(b=>b.onclick=save)}
