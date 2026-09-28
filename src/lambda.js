@@ -1,6 +1,7 @@
 const { sendQuoteEmail } = require("./services/quoteEmailService");
 const { saveSimulation } = require("./services/supabaseSimulationService");
 const { createQuotePdf } = require("./services/quotePdfService");
+const { getAdminPrices, updateAdminPrice } = require("./services/supabaseAdminPriceService");
 
 const LAMBDA_VERSION = "lambda-direct-v3";
 
@@ -25,6 +26,18 @@ async function handle(event) {
 
   if (method === "GET" && (path === "/" || path === "/healthz")) {
     return response(200, `ok ${LAMBDA_VERSION}`);
+  }
+
+  if (path === "/api/admin/prices" && !isAdminPriceRequest(event)) {
+    return response(401, "Não autorizado.");
+  }
+  if (method === "GET" && path === "/api/admin/prices") {
+    return jsonResponse(200, await getAdminPrices());
+  }
+  if (method === "PATCH" && path === "/api/admin/prices") {
+    const request = parseBody(event);
+    await updateAdminPrice(request.table, request.id, request.price);
+    return jsonResponse(200, { ok: true });
   }
 
   if (method === "POST" && path.endsWith("/api/quote/preview")) {
@@ -68,11 +81,18 @@ async function handle(event) {
   request.clientNif = clientNif;
 
   try {
-    await saveSimulation(request);
+    try {
+      await saveSimulation(request);
+    } catch (error) {
+      // Temporariamente ignoramos falhas de persistência enquanto a tabela
+      // cliente não estiver disponível no Supabase. O envio da proposta deve
+      // continuar a funcionar independentemente da gravação.
+      console.warn("Simulação não guardada no Supabase:", rootMessage(error));
+    }
     const sent = await sendQuoteEmailBestEffort(request);
     return response(200, sent
-      ? "Pedido guardado na base de dados e email enviado com sucesso para a empresa."
-      : "Pedido guardado na base de dados. O email para a empresa nao foi enviado.");
+      ? "Pedido processado e email enviado com sucesso para a empresa."
+      : "Pedido processado. O email para a empresa nao foi enviado.");
   } catch (error) {
     const message = rootMessage(error);
     if (error.name === "ValidationError" || error.name === "ConfigurationError") {
@@ -102,6 +122,20 @@ function response(statusCode, body) {
     },
     body
   };
+}
+
+function jsonResponse(statusCode, body) {
+  return {
+    statusCode,
+    headers: { "Access-Control-Allow-Methods": "GET,POST,PATCH,OPTIONS", "Access-Control-Allow-Headers": "Content-Type,Authorization,X-Admin-Password", "Content-Type": "application/json" },
+    body: JSON.stringify(body)
+  };
+}
+
+function isAdminPriceRequest(event) {
+  const headers = event.headers || {};
+  const supplied = headers["x-admin-password"] || headers["X-Admin-Password"] || "";
+  return Boolean(process.env.ADMIN_PRICES_PASSWORD && supplied === process.env.ADMIN_PRICES_PASSWORD);
 }
 
 function rootMessage(error) {

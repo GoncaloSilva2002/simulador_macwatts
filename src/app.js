@@ -5,6 +5,7 @@ const { sendQuoteEmail } = require("./services/quoteEmailService");
 const { saveSimulation } = require("./services/supabaseSimulationService");
 const { createQuotePdf } = require("./services/quotePdfService");
 const { getPrices } = require("./services/supabasePriceService");
+const { getAdminPrices, updateAdminPrice } = require("./services/supabaseAdminPriceService");
 
 function createApp() {
   const app = express();
@@ -55,12 +56,16 @@ function createApp() {
     request.clientNif = clientNif;
 
     try {
-      await saveSimulation(request);
+      try {
+        await saveSimulation(request);
+      } catch (error) {
+        console.warn("Simulação não guardada no Supabase:", rootMessage(error));
+      }
       const sent = await sendQuoteEmailBestEffort(request);
       if (!sent) {
-        return res.send("Pedido guardado na base de dados. O email para a empresa nao foi enviado.");
+        return res.send("Pedido processado. O email para a empresa nao foi enviado.");
       }
-      return res.send("Pedido guardado na base de dados e email enviado com sucesso para a empresa.");
+      return res.send("Pedido processado e email enviado com sucesso para a empresa.");
     } catch (error) {
       const message = rootMessage(error);
       if (error.name === "ValidationError" || error.name === "ConfigurationError") {
@@ -75,6 +80,20 @@ function createApp() {
   app.get("/api/prices", async (req, res) => {
     try { return res.json(await getPrices()); }
     catch (error) { return res.status(error.name === "ConfigurationError" ? 503 : 500).send(rootMessage(error)); }
+  });
+
+  app.get("/api/admin/prices", async (req, res) => {
+    if (!isAdminPriceRequest(req)) return res.status(401).send("Não autorizado.");
+    try { return res.json(await getAdminPrices()); }
+    catch (error) { return res.status(500).send(rootMessage(error)); }
+  });
+
+  app.patch("/api/admin/prices", async (req, res) => {
+    if (!isAdminPriceRequest(req)) return res.status(401).send("Não autorizado.");
+    try {
+      await updateAdminPrice(req.body?.table, req.body?.id, req.body?.price);
+      return res.json({ ok: true });
+    } catch (error) { return res.status(400).send(rootMessage(error)); }
   });
 
   app.post("/api/quote/preview", async (req, res) => {
@@ -108,6 +127,12 @@ function rootMessage(error) {
     current = current.cause;
   }
   return (current && current.message) || error.message || "erro desconhecido";
+}
+
+function isAdminPriceRequest(req) {
+  const configured = String(process.env.ADMIN_PRICES_PASSWORD || "");
+  const supplied = String(req.get("x-admin-password") || "");
+  return Boolean(configured && supplied && supplied === configured);
 }
 
 function parseBody(body) {

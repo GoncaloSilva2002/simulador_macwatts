@@ -37,10 +37,10 @@ async function getQuotePricing({ panels, batteryKwh = 0, backupKw = 0, lightType
   const [configs, gamas, batteries, batteryPrices, backups, backupPrices] = await Promise.all([
     query("configuracao", "select=*&num_paineis=eq." + encodeURIComponent(panelCount)),
     query("gama", "select=*"),
-    query("bateria", "select=*&potencia=eq." + encodeURIComponent(batteryCapacity)),
-    query("preco_bateria", "select=*&id_gama=eq." + await relatedId("gama", gama)),
-    query("backup", "select=*&potencia=eq." + encodeURIComponent(backupPower)),
-    query("preco_backup", "select=*&id_gama=eq." + await relatedId("gama", gama))
+    batteryCapacity > 0 ? query("bateria", "select=*&potencia=eq." + encodeURIComponent(batteryCapacity)) : Promise.resolve([]),
+    batteryCapacity > 0 ? query("preco_bateria", "select=*&id_gama=eq." + await relatedId("gama", gama)) : Promise.resolve([]),
+    backupPower > 0 ? query("backup", "select=*&potencia=eq." + encodeURIComponent(backupPower)) : Promise.resolve([]),
+    backupPower > 0 ? query("preco_backup", "select=*&id_gama=eq." + await relatedId("gama", gama)) : Promise.resolve([])
   ]);
   const config = configs.find((item) => Number(item.id_tipo_luz) === (String(lightType).toLowerCase().includes("tri") ? 2 : 1)) || configs[0];
   const gamaRow = gamas.find((item) => normalizeName(item.nome) === normalizeName(gama));

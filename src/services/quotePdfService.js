@@ -7,8 +7,9 @@ const navy = rgb(0.035, 0.09, 0.16);
 
 async function createQuotePdf(request) {
   const q = { ...(request.questionnaire || {}) };
+  const hasBatteryForPricing = q.hasBattery === true || q.hasBattery === "true" || q.hasBattery === "sim";
   try {
-    const pricing = await getQuotePricing({ panels: q.panelsNeeded, batteryKwh: q.batteryCapacityKwh || 0, backupKw: q.backupKw || (q.hasBattery ? 3 : 0), lightType: q.phaseType || "Monofásico", gama: q.gama || "Base" });
+    const pricing = await getQuotePricing({ panels: q.panelsNeeded, batteryKwh: hasBatteryForPricing ? (q.batteryCapacityKwh || 0) : 0, backupKw: hasBatteryForPricing ? (q.backupKw || 3) : 0, lightType: q.phaseType || "Monofásico", gama: q.gama || "Base" });
     if (pricing) Object.assign(q, { basePrice: pricing.basePrice, inverter: pricing.inverter, pricing });
   } catch (error) { console.warn("Precos/configuracao do Supabase indisponiveis:", error.message); }
   if (!q.inverter) {
@@ -237,7 +238,7 @@ async function renderQuoteHtml(request) {
   const q = { ...(request.questionnaire || {}) };
   try {
     const hasBatteryForPricing = q.hasBattery === true || q.hasBattery === "true" || q.hasBattery === "sim";
-    const pricing = await getQuotePricing({ panels: q.panelsNeeded, batteryKwh: q.batteryCapacityKwh || 0, backupKw: q.backupKw || (hasBatteryForPricing ? 3 : 0), lightType: q.phaseType || "Monofásico", gama: q.gama || "Base" });
+    const pricing = await getQuotePricing({ panels: q.panelsNeeded, batteryKwh: hasBatteryForPricing ? (q.batteryCapacityKwh || 0) : 0, backupKw: hasBatteryForPricing ? (q.backupKw || 3) : 0, lightType: q.phaseType || "Monofásico", gama: q.gama || "Base" });
     if (pricing) Object.assign(q, { basePrice: pricing.basePrice, inverter: pricing.inverter, pricing });
   } catch (error) { console.warn("Precos/configuracao do Supabase indisponiveis:", error.message); }
   if (!q.inverter) {
@@ -247,7 +248,7 @@ async function renderQuoteHtml(request) {
     if (Number.isFinite(Number(price))) html = html.replace(pattern, (match, prefix, suffix) => `${prefix}${money(price)} <small class="vat">(c/IVA)</small>${suffix}`);
   };
   const hasBatteryForPricing = q.hasBattery === true || q.hasBattery === "true" || q.hasBattery === "sim";
-  const pricingInput = { panels: q.panelsNeeded, batteryKwh: q.batteryCapacityKwh || 0, backupKw: q.backupKw || (hasBatteryForPricing ? 3 : 0), lightType: q.phaseType || "Monofásico" };
+  const pricingInput = { panels: q.panelsNeeded, batteryKwh: hasBatteryForPricing ? (q.batteryCapacityKwh || 0) : 0, backupKw: hasBatteryForPricing ? (q.backupKw || 3) : 0, lightType: q.phaseType || "Monofásico" };
   try {
     const [base, standard, premium] = await Promise.all([
       getQuotePricing({ ...pricingInput, gama: "Base" }),
