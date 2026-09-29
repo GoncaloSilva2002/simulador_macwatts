@@ -275,6 +275,7 @@ async function renderQuoteHtml(request) {
   html = html.replace(/<title>[\s\S]*?<\/title>/i, `<title>Proposta - ${clientTitle}</title>`);
   const production = Number(q.annualProduction || q.production || ((q.panelMonthlyKwh || 0) * (q.panelsNeeded || 0)) || 0) * 12;
   const consumption = Number(q.monthlyKwhEstimate || q.consumption || q.annualConsumption || 0) * 12;
+  const formatKwh = (amount) => Math.round(Number(amount) || 0).toLocaleString("pt-PT").replace(/\u00a0/g, " ");
   const monthly = Number(q.electricitySavings || 0);
   const independence = Number.isFinite(Number(q.independencePct))
     ? Math.max(0, Math.min(100, Number(q.independencePct)))
@@ -330,8 +331,8 @@ async function renderQuoteHtml(request) {
     batteryValue: q.graphBatteryPct ?? 0,
     gridValue: q.graphNetworkPct ?? Math.max(0, 100 - Number(q.graphSystemPct ?? independence) - Number(q.graphBatteryPct ?? 0))
   };
-  html = html.replace(/(id="annualProductionValue">)[\s\S]*?(<\/span>)/, `$1${production.toFixed(0)} kWh$2`);
-  html = html.replace(/(id="annualConsumptionValue">)[\s\S]*?(<\/span>)/, `$1${consumption.toFixed(0)} kWh$2`);
+  html = html.replace(/(id="annualProductionValue">)[\s\S]*?(<\/span>)/, `$1${formatKwh(production)} kWh$2`);
+  html = html.replace(/(id="annualConsumptionValue">)[\s\S]*?(<\/span>)/, `$1${formatKwh(consumption)} kWh$2`);
   for (const [id, raw] of Object.entries(graphValues)) {
     const pct = Math.max(0, Math.min(100, Number(raw) || 0));
     html = html.replace(new RegExp(`(id="${id}"[^>]*>)[\\s\\S]*?(<\\/b>)`), `$1${Math.round(pct)}%$2`);
