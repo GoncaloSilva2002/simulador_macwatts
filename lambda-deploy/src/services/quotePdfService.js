@@ -330,8 +330,6 @@ async function renderQuoteHtml(request) {
     batteryValue: q.graphBatteryPct ?? 0,
     gridValue: q.graphNetworkPct ?? Math.max(0, 100 - Number(q.graphSystemPct ?? independence) - Number(q.graphBatteryPct ?? 0))
   };
-  html = html.replace(/(id="annualProductionValue">)[\s\S]*?(<\/span>)/, `$1${production.toFixed(0)} kWh$2`);
-  html = html.replace(/(id="annualConsumptionValue">)[\s\S]*?(<\/span>)/, `$1${consumption.toFixed(0)} kWh$2`);
   for (const [id, raw] of Object.entries(graphValues)) {
     const pct = Math.max(0, Math.min(100, Number(raw) || 0));
     html = html.replace(new RegExp(`(id="${id}"[^>]*>)[\\s\\S]*?(<\\/b>)`), `$1${Math.round(pct)}%$2`);
