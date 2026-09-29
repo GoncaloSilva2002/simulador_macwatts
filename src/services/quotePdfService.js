@@ -134,6 +134,8 @@ async function createQuotePdf(request) {
     };
     drawGraph("Destino da produção mensal", leftRows, 300, 400, 380);
     drawGraph("Origem do consumo mensal", rightRows, 300, 400, 300);
+    page.drawText(`Produção Anual: ${formatKwh(production)} kWh`, { x: 300, y: 423, size: 8, font: bold, color: navy });
+    page.drawText(`Consumo Anual: ${formatKwh(consumption)} kWh`, { x: 300, y: 323, size: 8, font: bold, color: navy });
     drawField(418, 734, request.clientName, 9);
     drawField(409, 700, new Date().toLocaleDateString("pt-PT"), 9);
     const installationLayout = hasBattery

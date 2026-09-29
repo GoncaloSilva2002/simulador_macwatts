@@ -764,10 +764,10 @@
     const gridExportKwhDisplay = Math.max(0, productionKwhBase - systemKwhDisplay - batteryKwhDisplay);
     const gridImportKwhDisplay = Math.max(0, consumptionKwhBase - systemKwhDisplay - batteryKwhDisplay);
     const savingsKwh = systemKwhDisplay + batteryKwhDisplay;
-    const estimatedSavings = savingsKwh * pricePerKwh ;
+    const estimatedSavings = Math.round(savingsKwh * pricePerKwh);
     lastElectricitySavings = estimatedSavings;
     if (electricitySavings) {
-      electricitySavings.textContent = `${estimatedSavings.toFixed(2).replace(".", ",")} €`;
+      electricitySavings.textContent = `${estimatedSavings} €`;
     }
 
     if (chartBatteryProdRow) {
