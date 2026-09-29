@@ -652,7 +652,7 @@
 
 
     const productionMonthly = productionPerPanel * fitPanels;
-    const alignmentFactor = 0.85; // 85% eficiência temporal (ajustável)
+    const alignmentFactor = 0.90; // 90% eficiência temporal (ajustável)
     const producaoperca = productionMonthly * alignmentFactor;
 
     // --- CONSUMO ---
@@ -764,7 +764,7 @@
     const gridExportKwhDisplay = Math.max(0, productionKwhBase - systemKwhDisplay - batteryKwhDisplay);
     const gridImportKwhDisplay = Math.max(0, consumptionKwhBase - systemKwhDisplay - batteryKwhDisplay);
     const savingsKwh = systemKwhDisplay + batteryKwhDisplay;
-    const estimatedSavings = savingsKwh * pricePerKwh * 0.80;
+    const estimatedSavings = savingsKwh * pricePerKwh ;
     lastElectricitySavings = estimatedSavings;
     if (electricitySavings) {
       electricitySavings.textContent = `${estimatedSavings.toFixed(2).replace(".", ",")} €`;
@@ -1713,10 +1713,10 @@
     const productionPerPanel = ZONE_PANEL_MONTHLY_KWH[currentZoneLabel] ?? DEFAULT_PANEL_MONTHLY_KWH;
     const usageTime = usageTimeInputs.find((input) => input.checked)?.value || null;
     const usageFactor =
-      usageTime === "manhas" ? 0.40
-      : usageTime === "tardes" ? 0.55
+      usageTime === "manhas" ? 0.65
+      : usageTime === "tardes" ? 0.50
       : usageTime === "noites" ? 0.28
-      : 0.61;
+      : 0.40; // default (dia todo)
     const wantsBattery = batteryChoiceInputs.find((input) => input.checked)?.value === "sim";
     const hasElectricVehicle = formData.get("hasElectricVehicle") === "sim";
 
