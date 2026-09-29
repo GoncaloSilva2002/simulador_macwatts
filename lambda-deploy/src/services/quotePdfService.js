@@ -94,9 +94,8 @@ async function createQuotePdf(request) {
   setField("potencia", `${Number(q.panelsFitKwp || 0).toFixed(1)} kWp`);
   setField("inversor", q.inverter || "1 x Hibrido Monofasico 3 kW");
   setField("preco", money(price));
-  const formatKwh = (amount) => Math.round(Number(amount) || 0).toLocaleString("pt-PT").replace(/\u00a0/g, " ");
-  setField("producao", `${formatKwh(production)} kWh`);
-  setField("consumo", `${formatKwh(consumption)} kWh`);
+  setField("producao", `${production.toFixed(0)} kWh`);
+  setField("consumo", `${consumption.toFixed(0)} kWh`);
   setField("poupanca_mensal", money(q.electricitySavings));
   setField("poupanca_anual", money(annualSavings));
   setField("poupanca_30_anos", money(savings30Years));
@@ -148,8 +147,8 @@ async function createQuotePdf(request) {
       drawField(189, 597, `${Number(q.batteryCapacityKwh || 0).toFixed(0)} kWh`, 10);
     }
     drawField(122, 526, money(price), 10);
-    drawField(130, 367, `${formatKwh(production)} kWh`, 10);
-    drawField(130, 280, `${formatKwh(consumption)} kWh`, 10);
+    drawField(130, 367, `${production.toFixed(0)} kWh`, 10);
+    drawField(130, 280, `${consumption.toFixed(0)} kWh`, 10);
     page.drawText(`${Math.round(independencePct)}`, {
       x: 181,
       y: 231,
@@ -276,8 +275,8 @@ async function renderQuoteHtml(request) {
   html = html.replace(/<title>[\s\S]*?<\/title>/i, `<title>Proposta - ${clientTitle}</title>`);
   const production = Number(q.annualProduction || q.production || ((q.panelMonthlyKwh || 0) * (q.panelsNeeded || 0)) || 0) * 12;
   const consumption = Number(q.monthlyKwhEstimate || q.consumption || q.annualConsumption || 0) * 12;
-  const monthly = Number(q.electricitySavings || 0);
   const formatKwh = (amount) => Math.round(Number(amount) || 0).toLocaleString("pt-PT").replace(/\u00a0/g, " ");
+  const monthly = Number(q.electricitySavings || 0);
   const independence = Number.isFinite(Number(q.independencePct))
     ? Math.max(0, Math.min(100, Number(q.independencePct)))
     : (consumption ? Math.max(0, Math.min(100, production / consumption * 100)) : 0);
@@ -288,8 +287,8 @@ async function renderQuoteHtml(request) {
     ["4,24 kWp", `${Number(q.panelsFitKwp || 0).toFixed(2)} kWp`],
     ["15 kWh", `${Number(q.batteryCapacityKwh || 0).toFixed(0)} kWh`],
     ["11 439 â‚¬", money(q.basePrice || q.totalPrice || q.priceLight || request.basePrice)],
-    ["12 788 kWh", `${formatKwh(production)} kWh`],
-    ["16 200 kWh", `${formatKwh(consumption)} kWh`],
+    ["12 788 kWh", `${production.toFixed(0)} kWh`],
+    ["16 200 kWh", `${consumption.toFixed(0)} kWh`],
     ["197 â‚¬", money(monthly)],
     ["2 368 â‚¬", money(monthly * 12)],
     ["71 044 â‚¬", money(monthly * 360)]
