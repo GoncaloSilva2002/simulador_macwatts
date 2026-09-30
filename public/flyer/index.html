@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MacWatts — Kits Fotovoltaicos 2026</title>
+  <style>
+    :root{
+      --navy:#18324d;
+      --navy-2:#243e5a;
+      --green:#18c08f;
+      --cyan:#33b9e8;
+      --mint:#eaf8f4;
+      --mint-2:#ddf4ee;
+      --pale:#f5f8fa;
+      --pale-2:#eef4f6;
+      --line:#d8e2e7;
+      --text:#1e3044;
+      --mid:#708092;
+      --light-mid:#99a6b2;
+      --white:#fff;
+      --page-w:210mm;
+      --page-h:297mm;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:#e9eef1;color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    body{padding:18px 0}
+    #app{display:flex;flex-direction:column;align-items:center;gap:18px}
+    .page{width:var(--page-w);height:var(--page-h);background:#fff;position:relative;overflow:hidden;box-shadow:0 8px 28px rgba(25,48,70,.14);padding:11mm 11mm 10mm;display:flex;flex-direction:column}
+    .page-header{height:17mm;display:grid;grid-template-columns:1fr auto;align-items:start;border-bottom:1px solid var(--line);padding-bottom:3mm;position:relative}
+    .brand-logo{width:31mm;height:10mm;object-fit:contain;object-position:left center}
+    .header-copy{text-align:right;padding-top:1mm}
+    .tagline{font-weight:700;font-size:9.4pt;color:var(--navy);line-height:1.1}
+    .page-no{font-size:7pt;color:var(--light-mid);margin-top:3mm}
+    .footer{position:absolute;left:11mm;right:11mm;bottom:6mm;border-top:1px solid var(--line);padding-top:3.5mm;text-align:center;color:var(--mid);font-size:7.3pt}
+    .section-kicker{font-size:8pt;color:var(--green);font-weight:800;letter-spacing:.02em;text-transform:uppercase;margin:7mm 0 1.6mm}
+    .page-title{font-size:21pt;line-height:1.05;font-weight:800;color:var(--navy);margin:0}
+    .price-note{font-size:7.2pt;color:var(--mid);position:absolute;right:11mm;top:34mm}
+
+    /* Cover */
+    .cover .hero{height:101mm;border-radius:5mm;overflow:hidden;position:relative;margin-top:13mm;background:var(--pale)}
+    .cover .hero>img{width:100%;height:100%;object-fit:cover;display:block}
+    .savings-card{position:absolute;left:4.5mm;bottom:9mm;width:52mm;height:38mm;border-radius:5mm;background:rgba(17,42,67,.94);padding:7mm 6mm;color:#fff}
+    .savings-card .pre{font-size:8pt;color:var(--green);font-weight:800}.savings-card .big{font-size:30pt;font-weight:900;line-height:1.03;margin-top:1.6mm}.savings-card .post{font-size:7.4pt;font-weight:650;line-height:1.35;margin-top:1mm}
+    .finance-badge{position:absolute;right:5mm;top:5mm;width:54mm;min-height:18mm;border-radius:5mm;background:var(--navy);padding:5mm 6mm;color:#fff;font-size:7.5pt;font-weight:700;display:flex;align-items:center}
+    .product-label{width:72mm;height:20mm;border:1px solid var(--line);border-radius:4.5mm;background:white;margin:-8mm 0 0 4.5mm;position:relative;z-index:2;padding:5mm 6mm}
+    .product-label .small{font-size:8pt;font-weight:800;color:var(--green)}.product-label .large{font-size:18pt;font-weight:900;color:var(--navy);line-height:1.1}
+    .benefits-card{border:1px solid var(--line);border-radius:4.5mm;padding:7mm;margin-top:7mm;min-height:72mm}
+    .benefits-card h2{font-size:11pt;margin:0 0 6mm;color:var(--navy)}
+    .benefits-grid{display:grid;grid-template-columns:1fr 1fr;gap:5mm 8mm;margin-bottom:6mm}
+    .benefit{display:grid;grid-template-columns:7mm 1fr;align-items:start;gap:2.5mm;font-size:8.3pt;font-weight:650;line-height:1.3}
+    .check-circle{width:6mm;height:6mm;border-radius:50%;background:var(--mint-2);display:grid;place-items:center;color:var(--green);font-weight:900;font-size:8.3pt;line-height:1}
+    .brands-title{font-size:7.4pt;font-weight:800;color:var(--green);text-transform:uppercase;margin:1mm 0 3mm}
+    .brands{display:grid;grid-template-columns:repeat(7,1fr);gap:4mm;align-items:center}.brands img{width:100%;height:9mm;object-fit:contain}
+
+    /* Product pages */
+    .product-page .content{padding-top:0}
+    .pricing-wrap{margin-top:8mm;border:1px solid var(--line);border-radius:4mm;overflow:hidden}
+    table.pricing{width:100%;border-collapse:collapse;table-layout:fixed;font-size:6.8pt}
+    table.pricing col.config{width:10.33%} table.pricing col.price{width:11.5%}
+    .pricing thead tr.group th{height:9mm;background:var(--navy);color:#fff;font-weight:800;font-size:6.9pt;border-right:1px solid rgba(255,255,255,.18)}
+    .pricing thead tr.sub th{height:8mm;background:var(--pale-2);color:var(--navy);font-weight:800;border-right:1px solid var(--line)}
+    .pricing thead tr.sub th.config{background:var(--mint-2);color:var(--green)}
+    .pricing tbody td{height:7.9mm;text-align:center;font-weight:650;border-top:1px solid var(--line);border-right:1px solid var(--line);padding:0 1mm;white-space:nowrap}
+    .pricing tbody tr:nth-child(even) td{background:#fafcfd}
+    .pricing tbody td.config{font-weight:800}
+    .pricing .included{color:var(--green);font-weight:900}
+    .equipment-grid{display:grid;grid-template-columns:1fr 1fr;gap:3mm;margin-top:7mm}
+    .equipment-card{height:43mm;border:1px solid var(--line);border-radius:4mm;padding:4.5mm 4mm;position:relative;display:grid;grid-template-columns:26mm 1fr;grid-template-rows:auto 1fr;column-gap:4mm}
+    .equipment-card h3{grid-column:1/-1;font-size:7.1pt;line-height:1.2;margin:0 0 2.5mm;color:var(--navy);font-weight:900}
+    .equipment-card .eq-img{width:25mm;height:28mm;object-fit:contain;align-self:center;justify-self:center}
+    .equipment-card .eq-list{align-self:center;display:flex;flex-direction:column;justify-content:center;gap:2.2mm;min-width:0}
+    .eq-bullet{display:grid;grid-template-columns:5.2mm 1fr;align-items:center;gap:2mm;font-size:5.9pt;font-weight:650;line-height:1.15;min-height:5.2mm}
+    .eq-bullet .check-circle{width:4.8mm;height:4.8mm;font-size:6.7pt}
+    .equipment-card .brand-mark{position:absolute;right:4mm;bottom:2.5mm;width:17mm;height:6mm;object-fit:contain;object-position:right bottom}
+    .cert-row{display:grid;grid-template-columns:1fr 1fr;gap:4mm;margin-top:4mm}
+    .cert-pill{height:8mm;border-radius:99px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:6.4pt;font-weight:800;padding:0 5mm}
+    .cert-pill:first-child{background:var(--mint);color:var(--green)}.cert-pill:last-child{background:var(--pale-2);color:var(--navy)}
+
+    /* Conditions */
+    .conditions-page .conditions-stack{display:flex;flex-direction:column;gap:4mm;margin-top:9mm}
+    .condition-card{border:1px solid var(--line);background:var(--pale);border-radius:4.5mm;padding:6mm 7mm}
+    .condition-card h3{margin:0 0 4mm;color:var(--green);font-size:8pt;font-weight:900}
+    .condition-list{display:flex;flex-direction:column;gap:2.1mm}
+    .condition-item{display:grid;grid-template-columns:4.5mm 1fr;gap:2mm;align-items:start;font-size:7.2pt;line-height:1.25}
+    .condition-dot{width:2mm;height:2mm;border-radius:50%;background:var(--green);margin-top:1.7mm}
+
+    @media screen and (max-width:900px){
+      body{padding:0;background:#fff}.page{transform-origin:top center;box-shadow:none;margin:0 auto}.page:not(:last-child){margin-bottom:12px}
+    }
+    @media print{
+      @page{size:A4 portrait;margin:0}
+      html,body{background:#fff}
+      body{padding:0}
+      #app{display:block}
+      .page{box-shadow:none;margin:0;break-after:page;page-break-after:always}
+      .page:last-child{break-after:auto;page-break-after:auto}
+    }
+  </style>
+</head>
+<body>
+<div id="app"></div>
+
+<!--
+  Por defeito carrega os dados de flyer-data.js, para funcionar também ao abrir o HTML diretamente.
+  Num projeto real pode:
+  1) gerar window.FLYER_DATA no backend (PHP/Laravel/Node/etc.), ou
+  2) definir window.FLYER_DATA_URL = '/api/flyer/123' antes deste script.
+-->
+<script>window.FLYER_DATA_URL='/api/flyer';</script>
+<script src="flyer-data.js"></script>
+<script>
+  const ASSET = (name) => `assets/${name}`;
+  const esc = (v='') => String(v).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+
+  function header(data, pageNo){
+    return `<header class="page-header">
+      <img class="brand-logo" src="${ASSET('logo.png')}" alt="MacWatts">
+      <div class="header-copy"><div class="tagline">${esc(data.meta.tagline)}</div><div class="page-no">${pageNo}/6</div></div>
+    </header>`;
+  }
+  function footer(data){
+    return `<footer class="footer">${esc(data.meta.website)} &nbsp; | &nbsp; ${esc(data.meta.email)} &nbsp; | &nbsp; ${esc(data.meta.phone)}</footer>`;
+  }
+  function checkBullet(text){
+    return `<div class="benefit"><span class="check-circle">✓</span><span>${esc(text)}</span></div>`;
+  }
+  function coverPage(data){
+    const c=data.cover;
+    return `<section class="page cover">
+      ${header(data,1)}
+      <div class="hero">
+        <img src="${ASSET('hero.png')}" alt="Casa com sistema fotovoltaico">
+        <div class="savings-card"><div class="pre">${esc(c.savingsPrefix)}</div><div class="big">${esc(c.savings)}</div><div class="post">${esc(c.savingsSuffix)}</div></div>
+        <div class="finance-badge">${esc(c.financing)}</div>
+      </div>
+      <div class="product-label"><div class="small">KIT SOLAR</div><div class="large">RESIDENCIAL</div></div>
+      <div class="benefits-card">
+        <h2>${esc(c.headline)}</h2>
+        <div class="benefits-grid">${c.benefits.map(checkBullet).join('')}</div>
+        <div class="brands-title">Principais fabricantes</div>
+        <div class="brands">${c.brands.map(x=>`<img src="${ASSET(x)}" alt="">`).join('')}</div>
+      </div>
+      ${footer(data)}
+    </section>`;
+  }
+  function normalTableRows(rows){
+    return rows.map(r=>`<tr>${r.map((v,i)=>`<td class="${i<3?'config':''} ${String(v).includes('INCLUÍDO')?'included':''}">${esc(v)}</td>`).join('')}</tr>`).join('');
+  }
+  function teslaTableRows(rows){
+    return rows.map(r=>{
+      let cells=r.config.map(v=>`<td class="config">${esc(v)}</td>`).join('');
+      if(r.monoBundle!==undefined){
+        cells += `<td colspan="2">${esc(r.monoBundle)}</td><td class="${String(r.monoBackup).includes('INCLUÍDO')?'included':''}">${esc(r.monoBackup)}</td>`;
+      } else {
+        cells += r.mono.map(v=>`<td>${esc(v)}</td>`).join('');
+      }
+      if(r.triBundle!==undefined){
+        cells += `<td colspan="2">${esc(r.triBundle)}</td><td class="${String(r.triBackup).includes('INCLUÍDO')?'included':''}">${esc(r.triBackup)}</td>`;
+      } else {
+        cells += r.tri.map(v=>`<td>${esc(v)}</td>`).join('');
+      }
+      return `<tr>${cells}</tr>`;
+    }).join('');
+  }
+  function pricingTable(product){
+    return `<div class="pricing-wrap"><table class="pricing">
+      <colgroup><col class="config"><col class="config"><col class="config"><col class="price"><col class="price"><col class="price"><col class="price"><col class="price"><col class="price"></colgroup>
+      <thead>
+        <tr class="group"><th colspan="3">CONFIGURAÇÃO</th><th colspan="3">MONOFÁSICO &nbsp;·&nbsp; PVP C/IVA</th><th colspan="3">TRIFÁSICO &nbsp;·&nbsp; PVP C/IVA</th></tr>
+        <tr class="sub"><th class="config">Painéis</th><th class="config">kWp</th><th class="config">Bat. kWh</th><th>Kit Fotov.</th><th>Bateria</th><th>Backup</th><th>Kit Fotov.</th><th>Bateria</th><th>Backup</th></tr>
+      </thead>
+      <tbody>${product.tesla ? teslaTableRows(product.rows) : normalTableRows(product.rows)}</tbody>
+    </table></div>`;
+  }
+  function equipmentCard(eq){
+    return `<article class="equipment-card">
+      <h3>${esc(eq.title)}</h3>
+      <img class="eq-img" src="${ASSET(eq.image)}" alt="${esc(eq.title)}">
+      <div class="eq-list">${eq.bullets.map(b=>`<div class="eq-bullet"><span class="check-circle">✓</span><span>${esc(b)}</span></div>`).join('')}</div>
+      ${eq.brand?`<img class="brand-mark" src="${ASSET(eq.brand)}" alt="">`:''}
+    </article>`;
+  }
+  function productPage(data, product, pageNo){
+    return `<section class="page product-page" data-product="${esc(product.slug)}">
+      ${header(data,pageNo)}
+      <div class="section-kicker">${esc(product.title)}</div>
+      <h1 class="page-title">${esc(product.title)}</h1>
+      <div class="price-note">Preços PVP com IVA</div>
+      ${pricingTable(product)}
+      <div class="equipment-grid">${product.equipment.map(equipmentCard).join('')}</div>
+      <div class="cert-row"><div class="cert-pill">${esc(data.certifications[0])}</div><div class="cert-pill">${esc(data.certifications[1])}</div></div>
+      ${footer(data)}
+    </section>`;
+  }
+  function conditionsPage(data){
+    return `<section class="page conditions-page">
+      ${header(data,6)}
+      <div class="section-kicker">Condições</div>
+      <h1 class="page-title">Condições comerciais e técnicas</h1>
+      <div class="conditions-stack">${data.conditions.map(sec=>`<article class="condition-card"><h3>${esc(sec.title)}</h3><div class="condition-list">${sec.items.map(i=>`<div class="condition-item"><span class="condition-dot"></span><span>${esc(i)}</span></div>`).join('')}</div></article>`).join('')}</div>
+      ${footer(data)}
+    </section>`;
+  }
+  function render(data){
+    const pages=[coverPage(data)];
+    data.products.forEach((p,i)=>pages.push(productPage(data,p,i+2)));
+    pages.push(conditionsPage(data));
+    document.getElementById('app').innerHTML=pages.join('');
+  }
+  async function boot(){
+    let data=window.FLYER_DATA;
+    if(window.FLYER_DATA_URL){
+      const res=await fetch(window.FLYER_DATA_URL,{credentials:'same-origin'});
+      if(!res.ok) throw new Error(`Erro a carregar dados: ${res.status}`);
+      data=await res.json();
+    }
+    render(data);
+    if(new URLSearchParams(location.search).get('print')==='1') setTimeout(()=>window.print(),600);
+  }
+  boot().catch(err=>{console.error(err);document.body.innerHTML=`<pre style="padding:24px">${esc(err.message)}</pre>`});
+</script>
+</body>
+</html>

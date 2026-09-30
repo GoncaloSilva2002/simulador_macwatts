@@ -1,6 +1,7 @@
 const { sendQuoteEmail } = require("./services/quoteEmailService");
 const { saveSimulation } = require("./services/supabaseSimulationService");
 const { getAdminPrices, updateAdminPrice, updateAdminInverter } = require("./services/supabaseAdminPriceService");
+const { getFlyerData } = require("./services/flyerService");
 
 const LAMBDA_VERSION = "lambda-direct-v3";
 
@@ -40,6 +41,10 @@ async function handle(event) {
   }
   if (method === "GET" && path === "/api/admin/prices") {
     return jsonResponse(200, await getAdminPrices());
+  }
+
+  if (method === "GET" && path === "/api/flyer") {
+    return jsonResponse(200, await getFlyerData());
   }
   if (method === "PATCH" && path === "/api/admin/prices") {
     const request = parseBody(event);

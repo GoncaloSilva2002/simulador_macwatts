@@ -4,6 +4,7 @@ const path = require("path");
 const { sendQuoteEmail } = require("./services/quoteEmailService");
 const { saveSimulation } = require("./services/supabaseSimulationService");
 const { getPrices } = require("./services/supabasePriceService");
+const { getFlyerData } = require("./services/flyerService");
 const { getAdminPrices, updateAdminPrice, updateAdminInverter } = require("./services/supabaseAdminPriceService");
 
 function createApp() {
@@ -85,6 +86,11 @@ function createApp() {
     if (!isAdminPriceRequest(req)) return res.status(401).send("Não autorizado.");
     try { return res.json(await getAdminPrices()); }
     catch (error) { return res.status(500).send(rootMessage(error)); }
+  });
+
+  app.get("/api/flyer", async (req, res) => {
+    try { return res.json(await getFlyerData()); }
+    catch (error) { return res.status(500).json({ error: rootMessage(error) }); }
   });
 
   app.patch("/api/admin/prices", async (req, res) => {
