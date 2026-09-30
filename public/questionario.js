@@ -501,6 +501,16 @@
     return selected.value === "monofasica" ? "Monofásica" : "Trifásica";
   }
 
+  function setPhaseType(value) {
+    const option = phaseTypeInputs.find((input) => input.value === value);
+    if (option) option.checked = true;
+  }
+
+  function setBatteryChoice(value) {
+    const option = batteryChoiceInputs.find((input) => input.value === value);
+    if (option) option.checked = true;
+  }
+
   function getUsageTimeLabel() {
     const selected = usageTimeInputs.find((input) => input.checked);
     if (!selected) return null;
@@ -582,6 +592,7 @@
     const productionPerPanel = ZONE_PANEL_MONTHLY_KWH[currentZoneLabel] ?? DEFAULT_PANEL_MONTHLY_KWH;
     const usageTime = usageTimeInputs.find((input) => input.checked)?.value || null;
     const usageFactor = usageTime === "manhas" ? 0.40 : usageTime === "tardes" ? 0.55 : usageTime === "noites" ? 0.28 : 0.61;
+    const selectedPhase = phaseTypeInputs.find((input) => input.checked)?.value || "monofasica";
     const wantsBattery = batteryChoiceInputs.find((input) => input.checked)?.value === "sim";
     const monthlyKwhTotal = value / pricePerKwh;
     const monthlyKwhCovered = monthlyKwhTotal * usageFactor;
@@ -601,6 +612,23 @@
     let fitPanels = idealPanels;
     if (maxPanelsByArea !== null) {
       fitPanels = clampPanelsToAllowedCount(Math.min(idealPanels, maxPanelsByArea));
+    }
+    if (selectedPhase === "monofasica" && fitPanels >= 22) {
+      setPhaseType("trifasica");
+      setBatteryChoice("nao");
+      renderPriceSlider();
+      return;
+    }
+    if (selectedPhase === "trifasica" && fitPanels < 4) {
+      setPhaseType("monofasica");
+      setBatteryChoice("nao");
+      renderPriceSlider();
+      return;
+    }
+    if (selectedPhase === "trifasica" && fitPanels === 4 && wantsBattery) {
+      setBatteryChoice("nao");
+      renderPriceSlider();
+      return;
     }
     const fitPanelsRequest = fitPanels;
     const placedPanels = updatePanelOverlay(fitPanelsRequest);
@@ -1717,6 +1745,7 @@
       : usageTime === "tardes" ? 0.50
       : usageTime === "noites" ? 0.28
       : 0.40; // default (dia todo)
+    const phaseType = phaseTypeInputs.find((input) => input.checked)?.value || "monofasica";
     const wantsBattery = batteryChoiceInputs.find((input) => input.checked)?.value === "sim";
     const hasElectricVehicle = formData.get("hasElectricVehicle") === "sim";
 
@@ -1744,6 +1773,26 @@
     if (Number.isFinite(placedPanels) && placedPanels >= 0) {
       totalPanels = clampPanelsToAllowedCount(Math.min(totalPanels, placedPanels));
     }
+    if (phaseType === "monofasica" && totalPanels >= 22) {
+      setPhaseType("trifasica");
+      setBatteryChoice("nao");
+      statusEl.textContent = "Para esta dimensão, a solução foi ajustada para trifásica e sem bateria.";
+      renderPriceSlider();
+      return;
+    }
+    if (phaseType === "trifasica" && totalPanels < 4) {
+      setPhaseType("monofasica");
+      setBatteryChoice("nao");
+      statusEl.textContent = "Uma solução trifásica precisa de pelo menos 4 painéis e foi ajustada para monofásica.";
+      renderPriceSlider();
+      return;
+    }
+    if (phaseType === "trifasica" && totalPanels === 4 && wantsBattery) {
+      setBatteryChoice("nao");
+      statusEl.textContent = "A solução trifásica de 4 painéis não inclui bateria nem backup.";
+      renderPriceSlider();
+      return;
+    }
     const requiredKva = requiredKvaFromKwp(requiredKwpRounded);
     const panelsFitKwp = roundToOneDecimal(totalPanels * panelPower);
 
@@ -1765,7 +1814,6 @@
     }
     const mapSnapshotUrl = buildEmailStaticMapUrl();
     const roofType = roofTypeInputs.find((input) => input.checked)?.value || null;
-    const phaseType = phaseTypeInputs.find((input) => input.checked)?.value || null;
     const usageTimeSelected = usageTimeInputs.find((input) => input.checked)?.value || null;
     const payload = {
       propertyType: formData.get("propertyType"),
