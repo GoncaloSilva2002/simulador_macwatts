@@ -1,6 +1,5 @@
 const { sendQuoteEmail } = require("./services/quoteEmailService");
 const { saveSimulation } = require("./services/supabaseSimulationService");
-const { createQuotePdf } = require("./services/quotePdfService");
 const { getAdminPrices, updateAdminPrice, updateAdminInverter } = require("./services/supabaseAdminPriceService");
 
 const LAMBDA_VERSION = "lambda-direct-v3";
@@ -54,17 +53,6 @@ async function handle(event) {
     if (request.field === "inverter") { await updateAdminInverter(request.id, request.value); return jsonResponse(200, { ok: true }); }
     await updateAdminPrice(request.table, request.id, request.price);
     return jsonResponse(200, { ok: true });
-  }
-
-  if (method === "POST" && path.endsWith("/api/quote/preview")) {
-    const request = parseBody(event);
-    const pdf = await createQuotePdf(request);
-    return {
-      statusCode: 200,
-      headers: { "Content-Type": "text/html; charset=utf-8" },
-      isBase64Encoded: true,
-      body: pdf.toString("base64")
-    };
   }
 
   if (method !== "POST" || !path.endsWith("/api/quote/email")) {

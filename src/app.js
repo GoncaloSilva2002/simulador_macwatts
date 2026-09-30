@@ -3,7 +3,6 @@ const path = require("path");
 
 const { sendQuoteEmail } = require("./services/quoteEmailService");
 const { saveSimulation } = require("./services/supabaseSimulationService");
-const { createQuotePdf } = require("./services/quotePdfService");
 const { getPrices } = require("./services/supabasePriceService");
 const { getAdminPrices, updateAdminPrice, updateAdminInverter } = require("./services/supabaseAdminPriceService");
 
@@ -104,15 +103,6 @@ function createApp() {
       await updateAdminPrice(req.body?.table, req.body?.id, req.body?.price);
       return res.json({ ok: true });
     } catch (error) { return res.status(400).send(rootMessage(error)); }
-  });
-
-  app.post("/api/quote/preview", async (req, res) => {
-    try {
-      const pdf = await createQuotePdf(parseBody(req.body));
-      res.type("html").send(pdf);
-    } catch (error) {
-      res.status(500).send(`Falha ao gerar a pré-visualização: ${rootMessage(error)}`);
-    }
   });
 
   app.post("/api/quote/html", async (req, res) => {

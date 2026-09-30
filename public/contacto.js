@@ -83,7 +83,6 @@
   }
 
   const backBtn = document.getElementById("backBtn");
-  const previewQuoteBtn = document.getElementById("previewQuoteBtn");
   const form = document.getElementById("contactForm");
   const statusEl = document.getElementById("status");
   const sumAddress = document.getElementById("sumAddress");
@@ -111,7 +110,7 @@
   let invoicePhoto = loadStoredJson("invoicePhoto");
   let invoicePdf = loadStoredJson("invoicePdf");
 
-  if (previewQuoteBtn) {
+  if (false) {
     previewQuoteBtn.addEventListener("click", async () => {
       const clientName = String(document.getElementById("clientName")?.value || "").trim();
       if (!clientName) {
