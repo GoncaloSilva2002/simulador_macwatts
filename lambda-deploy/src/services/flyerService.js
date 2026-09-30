@@ -1,9 +1,0 @@
-const template = require("../../public/flyer/flyer-data.example.json");
-const { getQuotePricing } = require("./supabasePriceService");
-const PANEL_ROWS = [2, 4, 6, 8, 10, 12, 14, 16, 20, 22, 26];
-async function getFlyerData() { const data = JSON.parse(JSON.stringify(template)); for (const product of data.products) { const gama = product.title.replace(/^Gama\s+/i, "").trim(); product.rows = await Promise.all(PANEL_ROWS.map((panels) => buildPanelRow(panels, gama))); } return data; }
-async function buildPanelRow(panels, gama) { const [mono, tri] = await Promise.all([buildPhasePrices(panels, gama, "Monofásico", panels <= 20), buildPhasePrices(panels, gama, "Trifásico", panels >= 4)]); const batteryKwh = panels <= 2 ? 0 : Math.min(25, Math.max(5, Math.ceil(panels / 4) * 5)); return [String(panels), formatKwp(panels), batteryKwh ? String(batteryKwh) : "--", ...mono, ...tri]; }
-async function buildPhasePrices(panels, gama, phase, allowed) { if (!allowed) return ["--", "--", "--"]; const noExtras = panels === 2 || (phase === "Trifásico" && panels === 4); const batteryKwh = Math.min(25, Math.max(5, Math.ceil(panels / 4) * 5)); const [kit, battery, backup] = await Promise.all([getQuotePricing({ panels, gama, lightType: phase }), noExtras ? Promise.resolve(null) : getQuotePricing({ panels, gama, lightType: phase, batteryKwh }), noExtras ? Promise.resolve(null) : getQuotePricing({ panels, gama, lightType: phase, backupKw: 3 })]); return [formatPrice(kit?.basePrice), formatPrice(battery?.batteryPrice), formatPrice(backup?.backupPrice)]; }
-function formatKwp(panels) { return String((panels * 0.53).toFixed(1)).replace(".", ","); }
-function formatPrice(value) { return Number(value) > 0 ? `${Math.round(Number(value)).toLocaleString("pt-PT")} €` : "--"; }
-module.exports = { getFlyerData };
