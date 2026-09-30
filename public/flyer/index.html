@@ -215,6 +215,7 @@
       const res=await fetch(window.FLYER_DATA_URL,{credentials:'same-origin'});
       if(!res.ok) throw new Error(`Erro a carregar dados: ${res.status}`);
       data=await res.json();
+      if(!res.ok || !data || !Array.isArray(data.products)) throw new Error(data?.error || 'A API não devolveu os dados do flyer.');
     }
     render(data);
     if(new URLSearchParams(location.search).get('print')==='1') setTimeout(()=>window.print(),600);

@@ -125,6 +125,7 @@ function response(statusCode, body) {
   return {
     statusCode,
     headers: {
+      "Access-Control-Allow-Origin": process.env.CORS_ORIGIN || "*",
       "Access-Control-Allow-Methods": "GET,POST,PATCH,OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type,Authorization,X-Admin-Password",
       "Content-Type": "text/plain; charset=utf-8"
@@ -136,7 +137,7 @@ function response(statusCode, body) {
 function jsonResponse(statusCode, body) {
   return {
     statusCode,
-    headers: { "Access-Control-Allow-Methods": "GET,POST,PATCH,OPTIONS", "Access-Control-Allow-Headers": "Content-Type,Authorization,X-Admin-Password", "Content-Type": "application/json" },
+    headers: { "Access-Control-Allow-Origin": process.env.CORS_ORIGIN || "*", "Access-Control-Allow-Methods": "GET,POST,PATCH,OPTIONS", "Access-Control-Allow-Headers": "Content-Type,Authorization,X-Admin-Password", "Content-Type": "application/json" },
     body: JSON.stringify(body)
   };
 }
