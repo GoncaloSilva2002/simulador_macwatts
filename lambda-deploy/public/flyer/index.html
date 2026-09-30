@@ -107,8 +107,7 @@
   1) gerar window.FLYER_DATA no backend (PHP/Laravel/Node/etc.), ou
   2) definir window.FLYER_DATA_URL = '/api/flyer/123' antes deste script.
 -->
-<script src="../config.js"></script>
-<script>window.FLYER_DATA_URL=`${window.MACWATTS_CONFIG?.apiBaseUrl || ''}/api/flyer`;</script>
+<script>window.FLYER_DATA_URL='/api/flyer';</script>
 <script src="flyer-data.js"></script>
 <script>
   const ASSET = (name) => `assets/${name}`;
