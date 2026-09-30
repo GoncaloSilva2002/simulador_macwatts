@@ -511,6 +511,19 @@
     if (option) option.checked = true;
   }
 
+  function validateSolutionRules(phaseType, panelCount, wantsBattery) {
+    if (phaseType === "trifasica" && panelCount < 4) {
+      return "Uma solução trifásica precisa de pelo menos 4 painéis.";
+    }
+    if (phaseType === "monofasica" && panelCount > 20) {
+      return "Uma solução monofásica pode ter no máximo 20 painéis. Para 22 ou 26 painéis, selecione trifásico.";
+    }
+    if (phaseType === "trifasica" && panelCount === 4 && wantsBattery) {
+      return "A solução trifásica de 4 painéis não pode ter bateria nem backup.";
+    }
+    return "";
+  }
+
   function getUsageTimeLabel() {
     const selected = usageTimeInputs.find((input) => input.checked);
     if (!selected) return null;
@@ -612,23 +625,6 @@
     let fitPanels = idealPanels;
     if (maxPanelsByArea !== null) {
       fitPanels = clampPanelsToAllowedCount(Math.min(idealPanels, maxPanelsByArea));
-    }
-    if (selectedPhase === "monofasica" && fitPanels >= 22) {
-      setPhaseType("trifasica");
-      setBatteryChoice("nao");
-      renderPriceSlider();
-      return;
-    }
-    if (selectedPhase === "trifasica" && fitPanels < 4) {
-      setPhaseType("monofasica");
-      setBatteryChoice("nao");
-      renderPriceSlider();
-      return;
-    }
-    if (selectedPhase === "trifasica" && fitPanels === 4 && wantsBattery) {
-      setBatteryChoice("nao");
-      renderPriceSlider();
-      return;
     }
     const fitPanelsRequest = fitPanels;
     const placedPanels = updatePanelOverlay(fitPanelsRequest);
@@ -1773,24 +1769,9 @@
     if (Number.isFinite(placedPanels) && placedPanels >= 0) {
       totalPanels = clampPanelsToAllowedCount(Math.min(totalPanels, placedPanels));
     }
-    if (phaseType === "monofasica" && totalPanels >= 22) {
-      setPhaseType("trifasica");
-      setBatteryChoice("nao");
-      statusEl.textContent = "Para esta dimensão, a solução foi ajustada para trifásica e sem bateria.";
-      renderPriceSlider();
-      return;
-    }
-    if (phaseType === "trifasica" && totalPanels < 4) {
-      setPhaseType("monofasica");
-      setBatteryChoice("nao");
-      statusEl.textContent = "Uma solução trifásica precisa de pelo menos 4 painéis e foi ajustada para monofásica.";
-      renderPriceSlider();
-      return;
-    }
-    if (phaseType === "trifasica" && totalPanels === 4 && wantsBattery) {
-      setBatteryChoice("nao");
-      statusEl.textContent = "A solução trifásica de 4 painéis não inclui bateria nem backup.";
-      renderPriceSlider();
+    const solutionError = validateSolutionRules(phaseType, totalPanels, wantsBattery);
+    if (solutionError) {
+      statusEl.textContent = solutionError;
       return;
     }
     const requiredKva = requiredKvaFromKwp(requiredKwpRounded);
