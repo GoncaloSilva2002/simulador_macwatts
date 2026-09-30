@@ -7,7 +7,7 @@ async function getAdminPrices() {
     query("preco_configuracao", "select=id,preco,id_configuracao,id_gama&order=id"),
     query("bateria", "select=id,potencia&order=potencia"),
     query("preco_bateria", "select=id,preco,id_bateria,id_gama&order=id"),
-    query("backup", "select=id,nome,num_paineis,id_tipo_luz&order=num_paineis"),
+    query("backup", "select=id,nome,num_paineis&order=num_paineis"),
     query("preco_backup", "select=id,preco,id_backup,id_gama&order=id")
   ]);
 
@@ -15,10 +15,6 @@ async function getAdminPrices() {
   const configById = new Map(configs.map((row) => [Number(row.id), row]));
   const batteryById = new Map(batteries.map((row) => [Number(row.id), row]));
   const backupById = new Map(backups.map((row) => [Number(row.id), row]));
-  backups.forEach((backup) => {
-    const phase = Number(backup.id_tipo_luz) === 2 ? "Trifásico" : "Monofásico";
-    backup.nome = `${backup.nome || `${backup.num_paineis} painéis`} · ${phase}`;
-  });
 
   return [
     ...configPrices.map((row) => { const config = configById.get(Number(row.id_configuracao)); return { id: row.id, table: "preco_configuracao", category: "Painéis / configuração", label: configLabel(config), gama: gamaById.get(Number(row.id_gama)) || row.id_gama, price: Number(row.preco || 0), inverter: config?.inversor || "", configId: config?.id }; }),

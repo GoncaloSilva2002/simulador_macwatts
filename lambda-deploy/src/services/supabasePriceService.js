@@ -57,7 +57,7 @@ async function getQuotePricing({ panels, batteryKwh = 0, backupKw = 0, lightType
     }
   }
   const battery = batteries[0];
-  const backup = backups.find((item) => Number(item.id_tipo_luz) === desiredLightType) || backups[0];
+  const backup = backups[0];
   const batteryPrice = battery ? batteryPrices.find((item) => Number(item.id_bateria) === Number(battery.id)) : null;
   const backupPrice = backup ? backupPrices.find((item) => Number(item.id_backup) === Number(backup.id)) : null;
   return {
