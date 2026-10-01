@@ -12,6 +12,12 @@
     .tesla-config-title{margin-top:6.9mm;font-size:9pt;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--mid)}.tesla-cards{margin-top:3.2mm;display:grid;grid-template-columns:1fr 1fr;gap:4.2mm}.tesla-card{border-radius:5.3mm;padding:6.9mm;background:var(--pale);display:flex;flex-direction:column;gap:3.7mm}.tesla-card.dark{background:var(--deep);color:#fff}.tesla-card-head{display:flex;justify-content:space-between;align-items:baseline}.tesla-panels{font-size:22.5pt;font-weight:800;letter-spacing:-.02em}.tesla-meta{font-size:9.75pt;font-weight:700;color:var(--mid)}.dark .tesla-meta{color:#b9c8d6}.tesla-rule{height:1px;background:#d6e0e7}.dark .tesla-rule{background:#2c4560}.tesla-label{font-size:9pt;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mid)}.dark .tesla-label{color:#b9c8d6}.tesla-price-input{width:100%;border:0;background:transparent;color:inherit;font:800 30pt Sora,Manrope,sans-serif;letter-spacing:-.02em;padding:0;outline:0}.tesla-price-input.small{font:700 10.5pt Manrope,sans-serif;text-align:right}.tesla-price-input:focus{outline:1px solid var(--green);border-radius:3px;background:#fff;color:var(--deep)}.tesla-backup{align-self:flex-start;background:var(--green);color:var(--deep);border-radius:99px;padding:2.1mm 3.7mm;font-size:9.75pt;font-weight:800}.tesla-equipment{margin-top:6.4mm;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3.2mm}.tesla-equipment .equipment{padding:4.8mm}.tesla-equipment .eq-image{height:31.7mm}.tesla-equipment .eq-title{font-size:9.75pt}.tesla-equipment .eq-bullet{font-size:9.75pt}
     .conditions-intro{margin-top:6.9mm}.condition-stack{margin-top:5.3mm}.condition-card{background:var(--pale);border-radius:4.2mm;padding:5.3mm 6.4mm}.condition-card+.condition-card{margin-top:3.7mm}.condition-card h2{margin:0 0 2.6mm;font-size:9pt;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#0e7a5c}.condition-list{display:flex;flex-direction:column;gap:1.6mm;font-size:9.75pt;font-weight:500;line-height:1.4;color:#2a3e52}.condition-item{display:flex;gap:2.6mm;align-items:flex-start}.dot{width:1.6mm;height:1.6mm;flex:none;border-radius:50%;background:var(--green);margin-top:2.3mm}.payment{margin-top:3.7mm}.payment-title{margin:0 0 2.6mm;font-size:9pt;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#0e7a5c}.payment-grid{display:grid;grid-template-columns:1fr 1fr;gap:3.2mm}.payment-card{border:1.5px solid var(--line);border-radius:4.2mm;padding:4.8mm 5.3mm}.payment-card.green{border:0;background:var(--mint)}.payment-card h3{margin:0;font-size:13.5pt;font-weight:700;color:var(--deep)}.payment-line{margin-top:2.6mm;display:flex;gap:2.6mm;align-items:baseline;font-size:9.75pt;font-weight:600;color:#3b4f63}.payment-line strong{font-size:19.5pt;color:#0e7a5c}.contact-card{margin-top:4.2mm;background:var(--deep);color:#fff;border-radius:5.3mm;padding:5.8mm 6.9mm;display:flex;justify-content:space-between;align-items:center;gap:5.3mm}.contact-card h2{margin:0;font-size:16.5pt}.contact-card p{margin:1mm 0 0;font-size:9.75pt;color:#b9c8d6}.contact-info{text-align:right;font-size:11.25pt;font-weight:700}.contact-info strong{display:block;font-size:15pt;color:#3ee0ac;margin-bottom:1mm}
     @media screen and (max-width:900px){body{padding:0;background:#fff}.page{box-shadow:none;margin:0 auto}.page:not(:last-child){margin-bottom:12px}}@media print{@page{size:A4 portrait;margin:0}html,body{background:#fff}body{padding:0}#app{display:block}.page{box-shadow:none;margin:0;break-after:page;page-break-after:always}.page:last-child{break-after:auto;page-break-after:auto}.print-actions{display:none}.tesla-price-input{border:0!important;background:transparent!important}}
+    /* Ajustes do novo template: logos das marcas e logo da MacWatts na capa. */
+    .cover-logo-box{width:42mm;height:9mm;background:#fff;border-radius:99px;overflow:hidden;display:flex;align-items:center;padding:0 5.8mm;flex:none}.cover-logo-box img{display:block;width:49.5mm;height:auto;max-width:none;margin:-10mm 0 0 -4.8mm}.equipment{position:relative;overflow:hidden}.equipment-brand{width:18mm;height:6mm;object-fit:contain;align-self:flex-end;margin-top:auto}
+    /* Cores das tabelas conforme o novo modelo do flyer. */
+    .pricing .group .config-head{background:#e8f7f2;color:#0e7a5c}.pricing .group .mono{background:#18324d;color:#fff}.pricing .group .tri{background:#10243a;color:#fff}.pricing .sub{background:#edf2f6;color:#3b4f63}.pricing .data-row>div:nth-child(-n+3){background:#eef9f6}.pricing .data-row>div:nth-child(n+4){background:#fff}.pricing .data-row:nth-child(even)>div:nth-child(-n+3){background:#dff3ed}.pricing .data-row:nth-child(even)>div:nth-child(n+4){background:#f2f6f9}
+    /* Os logótipos passam a ocupar toda a barra dos fabricantes. */
+    .brands-bar{gap:0;padding-left:5.8mm;padding-right:5.8mm}.brands-bar .brands-label{display:none}.brands-bar .brands{width:100%;gap:5mm}.brands-bar .brands img{max-width:27mm;height:13mm}
   </style>
 </head>
 <body>
@@ -32,6 +38,42 @@
     function conditionsPage(data){return `<section class="page"><div>${header(data,6)}<div class="conditions-intro"><div class="kicker">Condições</div><h1 class="title" style="font-size:27pt">Condições comerciais e técnicas</h1></div><div class="condition-stack">${data.conditions.slice(0,2).map(sec=>`<article class="condition-card"><h2>${esc(sec.title)}</h2><div class="condition-list">${sec.items.map(i=>`<div class="condition-item"><span class="dot"></span><span>${esc(i)}</span></div>`).join('')}</div></article>`).join('')}<div class="payment"><h2 class="payment-title">Condições de pagamento</h2><div class="payment-grid"><div class="payment-card"><h3>Pronto pagamento</h3><div class="payment-line"><strong>50%</strong><span>com a adjudicação</span></div><div class="payment-line"><strong>50%</strong><span>com a conclusão da instalação</span></div></div><div class="payment-card green"><h3>Pagamento a crédito</h3><div class="payment-line"><strong>24 a 120 meses</strong></div><div class="payment-line">com taxa de juro fixa</div></div></div></div><div class="contact-card"><div><h2>Fale connosco</h2><p>Encontramos o kit certo para a sua casa.</p></div><div class="contact-info"><strong>${esc(data.meta.phone)}</strong><span>${esc(data.meta.email)} · ${esc(data.meta.website)}</span></div></div></div></div>${footer(data)}</section>`}
     function setupTeslaInputs(){document.querySelectorAll('.tesla-price-input').forEach(input=>input.addEventListener('blur',()=>{const value=formatPriceCell(input.value);input.value=value;const saved=savedTesla();saved[input.dataset.teslaKey]=value;localStorage.setItem('macwatts-tesla-prices',JSON.stringify(saved))}))}function render(data){const pages=[coverPage(data)];data.products.filter(p=>!p.tesla).forEach((p,i)=>pages.push(productPage(data,p,i+2)));const tesla=data.products.find(p=>p.tesla);if(tesla)pages.push(teslaPage(data,tesla,5));pages.push(conditionsPage(data));document.getElementById('app').innerHTML=pages.join('');setupTeslaInputs()}
     async function boot(){let data=window.FLYER_DATA;if(window.FLYER_DATA_URL){const res=await fetch(window.FLYER_DATA_URL,{credentials:'same-origin'});if(!res.ok)throw new Error(`Erro a carregar dados: ${res.status}`);data=await res.json()}const fallbackTesla=window.FLYER_DATA?.products?.find(p=>p.tesla);const apiTesla=data.products?.find(p=>p.tesla);if(apiTesla&&(!Array.isArray(apiTesla.rows)||!apiTesla.rows.some(r=>Array.isArray(r.config))))apiTesla.rows=fallbackTesla?.rows||apiTesla.rows;render(data);document.getElementById('printPdf').onclick=()=>window.print()}boot().catch(err=>{console.error(err);document.body.innerHTML=`<pre style="padding:24px">${esc(err.message)}</pre>`});
+  </script>
+  <script>
+    (() => {
+      const updateFlyerLayout = () => {
+        const logo = document.querySelector('.cover-logo');
+        if (logo && !logo.closest('.cover-logo-box')) {
+          const box = document.createElement('div');
+          box.className = 'cover-logo-box';
+          logo.className = '';
+          logo.replaceWith(box);
+          box.appendChild(logo);
+        }
+
+        document.querySelectorAll('.subtitle').forEach(element => element.remove());
+
+        document.querySelectorAll('.equipment').forEach(card => {
+          const title = card.querySelector('.eq-title')?.textContent.trim().toUpperCase() || '';
+          if (title === 'SISTEMA TESLA') {
+            card.remove();
+            return;
+          }
+          const brand = title.includes('TESLA') ? 'tesla.png' : title.includes('HUAWEI') ? 'huawei.png' : title.includes('FOX') ? 'fox.png' : '';
+          if (brand && !card.querySelector('.equipment-brand')) {
+            const image = document.createElement('img');
+            image.className = 'equipment-brand';
+            image.src = `assets/${brand}`;
+            image.alt = '';
+            card.appendChild(image);
+          }
+        });
+      };
+
+      const app = document.getElementById('app');
+      new MutationObserver(updateFlyerLayout).observe(app, { childList: true, subtree: true });
+      updateFlyerLayout();
+    })();
   </script>
 </body>
 </html>
