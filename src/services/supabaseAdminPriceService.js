@@ -23,7 +23,7 @@ async function getAdminPrices() {
   return [
     ...configPrices.map((row) => { const config = configById.get(Number(row.id_configuracao)); return { id: row.id, table: "preco_configuracao", category: "Painéis / configuração", label: configLabel(config), gama: gamaById.get(Number(row.id_gama)) || row.id_gama, price: Number(row.preco || 0), inverter: config?.inversor || "", configId: config?.id }; }),
     ...batteryPrices.map((row) => ({ id: row.id, table: "preco_bateria", category: "Bateria", label: `${batteryById.get(Number(row.id_bateria))?.potencia ?? row.id_bateria} kWh`, gama: gamaById.get(Number(row.id_gama)) || row.id_gama, price: Number(row.preco || 0) })),
-    ...backupPrices.map((row) => ({ id: row.id, table: "preco_backup", category: "Backup", label: backupById.get(Number(row.id_backup))?.nome || `${backupById.get(Number(row.id_backup))?.num_paineis ?? row.id_backup} painéis`, gama: gamaById.get(Number(row.id_gama)) || row.id_gama, price: Number(row.preco || 0) }))
+    ...backupPrices.map((row) => { const backup = backupById.get(Number(row.id_backup)); return { id: row.id, table: "preco_backup", category: "Backup", label: backup?.nome || `${backup?.num_paineis ?? row.id_backup} painéis`, gama: gamaById.get(Number(row.id_gama)) || row.id_gama, price: Number(row.preco || 0), panels: Number(backup?.num_paineis), phase: Number(backup?.id_tipo_luz) === 2 ? "Trifásico" : "Monofásico" }; })
   ];
 }
 
