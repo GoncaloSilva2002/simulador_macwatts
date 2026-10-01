@@ -18,8 +18,10 @@
     .pricing .group .config-head{background:#e8f7f2;color:#0e7a5c}.pricing .group .mono{background:#18324d;color:#fff}.pricing .group .tri{background:#10243a;color:#fff}.pricing .sub{background:#edf2f6;color:#3b4f63}.pricing .data-row>div:nth-child(-n+3){background:#eef9f6}.pricing .data-row>div:nth-child(n+4){background:#fff}.pricing .data-row:nth-child(even)>div:nth-child(-n+3){background:#dff3ed}.pricing .data-row:nth-child(even)>div:nth-child(n+4){background:#f2f6f9}
     /* Os logótipos passam a ocupar toda a barra dos fabricantes. */
     .brands-bar{gap:0;padding-left:5.8mm;padding-right:5.8mm}.brands-bar .brands-label{display:none}.brands-bar .brands{width:100%;gap:4mm}.brands-bar .brands img{max-width:30mm;height:15mm}.equipment-brand{width:22mm;height:7mm}
-    .cover-logo-box img{width:38mm;margin:-4.8mm 0 0 -3.7mm}
-    .tesla-card.dark div[style*="grid-template-columns"]{min-width:0}.tesla-card.dark div[style*="grid-template-columns"]>div{min-width:0;overflow:hidden}.tesla-card.dark .tesla-price-input{min-width:0;width:100%;font-size:25pt;letter-spacing:-.04em;white-space:nowrap}
+    .cover-logo-box img{width:38mm;margin:0 0 0 -3.7mm}
+    .tesla-card.dark div[style*="grid-template-columns"]{min-width:0}.tesla-card.dark div[style*="grid-template-columns"]>div{min-width:0;overflow:hidden}.tesla-card.dark .tesla-price-input{min-width:0;width:100%;font-size:20pt!important;letter-spacing:-.03em;white-space:nowrap;overflow:hidden}
+    .cover-hero>img{object-position:50% 0}
+    .cover-top{top:12mm}.finance-card{top:162mm}.finance-icon svg{width:6.5mm;height:6.5mm;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
   </style>
 </head>
 <body>
@@ -54,6 +56,11 @@
         }
 
         document.querySelectorAll('.subtitle').forEach(element => element.remove());
+
+        const financeIcon = document.querySelector('.finance-icon');
+        if (financeIcon && !financeIcon.querySelector('svg')) {
+          financeIcon.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2"></rect><path d="M2.5 9.5h19"></path><path d="M6 14h4"></path></svg>';
+        }
 
         document.querySelectorAll('.equipment').forEach(card => {
           const title = card.querySelector('.eq-title')?.textContent.trim().toUpperCase() || '';
