@@ -28,7 +28,7 @@
     #app{display:flex;flex-direction:column;align-items:center;gap:18px}
     .page{width:var(--page-w);height:var(--page-h);background:#fff;position:relative;overflow:hidden;box-shadow:0 8px 28px rgba(25,48,70,.14);padding:11mm 11mm 10mm;display:flex;flex-direction:column}
     .page-header{height:17mm;display:grid;grid-template-columns:1fr auto;align-items:start;border-bottom:1px solid var(--line);padding-bottom:3mm;position:relative}
-    .brand-logo{width:48mm;height:15mm;object-fit:contain;object-position:left center}
+    .brand-logo{width:55mm;height:17mm;object-fit:contain;object-position:left center}
     .header-copy{text-align:right;padding-top:1mm}
     .tagline{font-weight:700;font-size:9.4pt;color:var(--navy);line-height:1.1}
     .page-no{font-size:7pt;color:var(--light-mid);margin-top:3mm}
@@ -45,13 +45,13 @@
     .finance-badge{position:absolute;right:5mm;top:5mm;width:54mm;min-height:18mm;border-radius:5mm;background:var(--navy);padding:5mm 6mm;color:#fff;font-size:7.5pt;font-weight:700;display:flex;align-items:center}
     .product-label{width:72mm;height:20mm;border:1px solid var(--line);border-radius:4.5mm;background:white;margin:-8mm 0 0 4.5mm;position:relative;z-index:2;padding:5mm 6mm}
     .product-label .small{font-size:8pt;font-weight:800;color:var(--green)}.product-label .large{font-size:18pt;font-weight:900;color:var(--navy);line-height:1.1}
-    .benefits-card{border:1px solid var(--line);border-radius:4.5mm;padding:7mm;margin-top:7mm;min-height:103mm}
+    .benefits-card{border:1px solid var(--line);border-radius:4.5mm;padding:7mm;margin-top:7mm;min-height:103mm;display:flex;flex-direction:column}
     .benefits-card h2{font-size:11pt;margin:0 0 6mm;color:var(--navy)}
     .benefits-grid{display:grid;grid-template-columns:1fr 1fr;gap:5mm 8mm;margin-bottom:6mm}
     .benefit{display:grid;grid-template-columns:7mm 1fr;align-items:start;gap:2.5mm;font-size:8.3pt;font-weight:650;line-height:1.3}
     .check-circle{width:6mm;height:6mm;border-radius:50%;background:var(--mint-2);display:grid;place-items:center;color:var(--green);font-weight:900;font-size:8.3pt;line-height:1}
     .brands-title{font-size:7.4pt;font-weight:800;color:var(--green);text-transform:uppercase;margin:1mm 0 3mm}
-    .brands{display:grid;grid-template-columns:repeat(7,1fr);gap:5mm;align-items:center}.brands img{width:100%;height:15mm;object-fit:contain}
+    .brands{display:grid;grid-template-columns:repeat(7,1fr);gap:5mm;align-items:center;margin-top:9mm}.brands img{width:100%;height:15mm;object-fit:contain}
 
     /* Product pages */
     .product-page .content{padding-top:0}
@@ -66,16 +66,17 @@
     .pricing tbody td.config{font-weight:800}
     .pricing .included{color:var(--green);font-weight:900}
     .equipment-grid{display:grid;grid-template-columns:1fr 1fr;gap:3mm;margin-top:7mm}
-    .equipment-card{height:53mm;border:1px solid var(--line);border-radius:4mm;padding:4mm;position:relative;display:grid;grid-template-columns:24mm 1fr;grid-template-rows:auto 1fr;column-gap:3.5mm;overflow:hidden}
+    .equipment-card{height:48mm;border:1px solid var(--line);border-radius:4mm;padding:3.5mm 4mm;position:relative;display:grid;grid-template-columns:24mm 1fr;grid-template-rows:auto 1fr;column-gap:3.5mm;overflow:hidden}
     .equipment-card h3{grid-column:1/-1;font-size:7.1pt;line-height:1.2;margin:0 0 2.5mm;color:var(--navy);font-weight:900}
-    .equipment-card .eq-img{width:23mm;height:28mm;object-fit:contain;align-self:center;justify-self:center}
-    .equipment-card .eq-list{align-self:center;display:flex;flex-direction:column;justify-content:center;gap:1.6mm;min-width:0}
-    .eq-bullet{display:grid;grid-template-columns:4.8mm minmax(0,1fr);align-items:center;gap:1.6mm;font-size:5.7pt;font-weight:650;line-height:1.15;min-height:4.8mm;overflow-wrap:anywhere}
+    .equipment-card .eq-img{width:23mm;height:24mm;object-fit:contain;align-self:center;justify-self:center}
+    .equipment-card .eq-list{align-self:center;display:flex;flex-direction:column;justify-content:center;gap:1.2mm;min-width:0}
+    .eq-bullet{display:grid;grid-template-columns:4.8mm minmax(0,1fr);align-items:center;gap:1.6mm;font-size:5.5pt;font-weight:650;line-height:1.1;min-height:4.5mm;overflow-wrap:anywhere}
     .eq-bullet .check-circle{width:4.8mm;height:4.8mm;font-size:6.7pt}
     .equipment-card .brand-mark{position:absolute;right:4mm;bottom:2.5mm;width:17mm;height:6mm;object-fit:contain;object-position:right bottom}
     .cert-row{display:grid;grid-template-columns:1fr 1fr;gap:4mm;margin-top:4mm}
     .cert-pill{height:8mm;border-radius:99px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:6.4pt;font-weight:800;padding:0 5mm}
     .cert-pill:first-child{background:var(--mint);color:var(--green)}.cert-pill:last-child{background:var(--pale-2);color:var(--navy)}
+    .print-actions{position:fixed;right:18px;bottom:18px;z-index:10}.print-button{border:0;border-radius:8px;padding:11px 16px;background:var(--navy);color:#fff;font:700 13px inherit;cursor:pointer;box-shadow:0 4px 14px rgba(25,48,70,.2)}
 
     /* Conditions */
     .conditions-page .conditions-stack{display:flex;flex-direction:column;gap:4mm;margin-top:9mm}
@@ -95,11 +96,13 @@
       #app{display:block}
       .page{box-shadow:none;margin:0;break-after:page;page-break-after:always}
       .page:last-child{break-after:auto;page-break-after:auto}
+      .print-actions{display:none}
     }
   </style>
 </head>
 <body>
 <div id="app"></div>
+<div class="print-actions"><button id="printPdf" class="print-button" type="button">Guardar / imprimir PDF</button></div>
 
 <!--
   Por defeito carrega os dados de flyer-data.js, para funcionar também ao abrir o HTML diretamente.
@@ -145,6 +148,7 @@
       ${footer(data)}
     </section>`;
   }
+  function formatEuroText(value){const raw=String(value??'').trim();if(!/^\d[\d\s\u00a0\u202f.,]*\s*€$/.test(raw))return value;const amount=Number(raw.replace(/\s/g,'').replace('€','').replace(',','.'));return Number.isFinite(amount)?`${Math.round(amount).toLocaleString('pt-PT').replace(/[\u00a0\u202f]/g,' ')} €`:value;}
   function normalTableRows(rows){
     return rows.map(r=>`<tr>${r.map((v,i)=>`<td class="${i<3?'config':''} ${String(v).includes('INCLUÍDO')?'included':''}">${esc(v)}</td>`).join('')}</tr>`).join('');
   }
@@ -218,7 +222,8 @@
       if(!res.ok || !data || !Array.isArray(data.products)) throw new Error(data?.error || 'A API não devolveu os dados do flyer.');
     }
     render(data);
-    if(new URLSearchParams(location.search).get('print')==='1') setTimeout(()=>window.print(),600);
+    document.querySelectorAll('.pricing td:not(.config)').forEach(cell=>{cell.textContent=formatEuroText(cell.textContent);});
+    document.getElementById('printPdf').onclick=()=>window.print();
   }
   boot().catch(err=>{console.error(err);document.body.innerHTML=`<pre style="padding:24px">${esc(err.message)}</pre>`});
 </script>
