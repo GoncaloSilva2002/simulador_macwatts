@@ -27,9 +27,9 @@
     body{padding:18px 0}
     #app{display:flex;flex-direction:column;align-items:center;gap:18px}
     .page{width:var(--page-w);height:var(--page-h);background:#fff;position:relative;overflow:hidden;box-shadow:0 8px 28px rgba(25,48,70,.14);padding:11mm 11mm 10mm;display:flex;flex-direction:column}
-    .page-header{height:17mm;display:grid;grid-template-columns:1fr auto;align-items:start;border-bottom:1px solid var(--line);padding-bottom:3mm;position:relative}
-    .brand-logo{width:55mm;height:17mm;object-fit:contain;object-position:left center}
-    .header-copy{text-align:right;padding-top:1mm}
+    .page-header{height:17mm;display:grid;grid-template-columns:1fr auto;align-items:center;border-bottom:1px solid var(--line);padding-bottom:3mm;position:relative}
+    .brand-logo{width:62mm;height:18mm;object-fit:contain;object-position:left center}
+    .header-copy{text-align:right;padding-top:0}
     .tagline{font-weight:700;font-size:9.4pt;color:var(--navy);line-height:1.1}
     .page-no{font-size:7pt;color:var(--light-mid);margin-top:3mm}
     .footer{position:absolute;left:11mm;right:11mm;bottom:6mm;border-top:1px solid var(--line);padding-top:3.5mm;text-align:center;color:var(--mid);font-size:7.3pt}
@@ -51,7 +51,7 @@
     .benefit{display:grid;grid-template-columns:6mm 1fr;align-items:center;gap:2.5mm;font-size:8.3pt;font-weight:650;line-height:1.3}
     .check-circle{width:6mm;height:6mm;border-radius:50%;background:var(--mint-2);display:grid;place-items:center;color:var(--green);font-weight:900;font-size:8.3pt;line-height:1}
     .brands-title{font-size:7.4pt;font-weight:800;color:var(--green);text-transform:uppercase;margin:1mm 0 3mm}
-    .brands{display:grid;grid-template-columns:repeat(7,1fr);gap:5mm;align-items:center;margin-top:17mm}.brands img{width:100%;height:14mm;object-fit:contain}
+    .brands{display:grid;grid-template-columns:repeat(7,1fr);gap:5mm;align-items:center;margin-top:4mm}.brands img{width:100%;height:14mm;object-fit:contain}
 
     /* Product pages */
     .product-page .content{padding-top:0}
@@ -78,6 +78,7 @@
     .cert-pill:first-child{background:var(--mint);color:var(--green)}.cert-pill:last-child{background:var(--pale-2);color:var(--navy)}
     .print-actions{position:fixed;right:18px;bottom:18px;z-index:10}.print-button{border:0;border-radius:8px;padding:11px 16px;background:var(--navy);color:#fff;font:700 13px inherit;cursor:pointer;box-shadow:0 4px 14px rgba(25,48,70,.2)}
     .tesla-editor{position:fixed;left:18px;bottom:18px;z-index:10;display:flex;align-items:center;gap:8px;padding:10px 12px;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 4px 14px rgba(25,48,70,.2);font-size:12px;font-weight:700}.tesla-editor label{display:flex;align-items:center;gap:4px}.tesla-editor input{width:82px;padding:6px;border:1px solid var(--line);border-radius:6px;font:inherit}.tesla-editor button{border:0;border-radius:6px;padding:7px 10px;background:var(--green);color:#fff;font-weight:800;cursor:pointer}
+    .tesla-price-input{width:100%;min-width:0;border:0;background:transparent;color:inherit;text-align:center;font:inherit;padding:0;outline:0}.tesla-price-input:focus{background:#fff;border:1px solid var(--green);border-radius:3px;padding:1px 2px}
 
     /* Conditions */
     .conditions-page .conditions-stack{display:flex;flex-direction:column;gap:4mm;margin-top:9mm}
@@ -154,16 +155,17 @@
   function normalTableRows(rows){
     return rows.map(r=>`<tr>${r.map((v,i)=>`<td class="${i<3?'config':''} ${String(v).includes('INCLUÍDO')?'included':''}">${esc(v)}</td>`).join('')}</tr>`).join('');
   }
+  function teslaPriceInput(value,key){let saved={};try{saved=JSON.parse(localStorage.getItem('macwatts-tesla-prices')||'{}')}catch(e){}return `<input class="tesla-price-input" data-tesla-key="${esc(key)}" value="${esc(saved[key]||formatEuroText(value))}" aria-label="Preço Tesla">`;}
   function teslaTableRows(rows){
     return rows.map(r=>{
       let cells=r.config.map(v=>`<td class="config">${esc(v)}</td>`).join('');
       if(r.monoBundle!==undefined){
-        cells += `<td colspan="2"${String(r.config?.[0])==='26'?' data-tesla-price="mono"':''}>${esc(r.monoBundle)}</td><td class="${String(r.monoBackup).includes('INCLUÍDO')?'included':''}">${esc(r.monoBackup)}</td>`;
+        cells += `<td colspan="2">${teslaPriceInput(r.monoBundle,`monoBundle-${r.config[0]}`)}</td><td class="${String(r.monoBackup).includes('INCLUÍDO')?'included':''}">${String(r.monoBackup).includes('INCLUÍDO')?esc(r.monoBackup):teslaPriceInput(r.monoBackup,`monoBackup-${r.config[0]}`)}</td>`;
       } else {
         cells += r.mono.map(v=>`<td>${esc(v)}</td>`).join('');
       }
       if(r.triBundle!==undefined){
-        cells += `<td colspan="2"${String(r.config?.[0])==='26'?' data-tesla-price="tri"':''}>${esc(r.triBundle)}</td><td class="${String(r.triBackup).includes('INCLUÍDO')?'included':''}">${esc(r.triBackup)}</td>`;
+        cells += `<td colspan="2">${teslaPriceInput(r.triBundle,`triBundle-${r.config[0]}`)}</td><td class="${String(r.triBackup).includes('INCLUÍDO')?'included':''}">${String(r.triBackup).includes('INCLUÍDO')?esc(r.triBackup):teslaPriceInput(r.triBackup,`triBackup-${r.config[0]}`)}</td>`;
       } else {
         cells += r.tri.map(v=>`<td>${esc(v)}</td>`).join('');
       }
@@ -187,6 +189,7 @@
     const product=data.products.find(p=>p.tesla);if(!product)return;const values=teslaValues(data);document.querySelector('.tesla-editor')?.remove();const editor=document.createElement('div');editor.className='tesla-editor';editor.innerHTML=`<label>Preço mono <input id="teslaMono" value="${esc(values.mono)}"></label><label>Preço tri <input id="teslaTri" value="${esc(values.tri)}"></label><button id="saveTeslaPrices" type="button">Aplicar</button>`;document.body.appendChild(editor);document.getElementById('saveTeslaPrices').onclick=()=>{const clean=value=>String(value).replace(/[^\d.,-]/g,'');const mono=formatEuroText(clean(document.getElementById('teslaMono').value)+' €'),tri=formatEuroText(clean(document.getElementById('teslaTri').value)+' €');document.getElementById('teslaMono').value=mono;document.getElementById('teslaTri').value=tri;document.querySelector('[data-tesla-price="mono"]')?.replaceChildren(mono);document.querySelector('[data-tesla-price="tri"]')?.replaceChildren(tri);localStorage.setItem('macwatts-tesla-prices',JSON.stringify({mono,tri}));};
     document.querySelector('[data-tesla-price="mono"]')?.replaceChildren(values.mono);document.querySelector('[data-tesla-price="tri"]')?.replaceChildren(values.tri);
   }
+  function setupTeslaPriceInputs(){document.querySelectorAll('.tesla-price-input').forEach(input=>{input.addEventListener('blur',()=>{const value=formatEuroText(input.value);input.value=value;let saved={};try{saved=JSON.parse(localStorage.getItem('macwatts-tesla-prices')||'{}')}catch(e){}saved[input.dataset.teslaKey]=value;localStorage.setItem('macwatts-tesla-prices',JSON.stringify(saved));});});}
   function equipmentCard(eq){
     return `<article class="equipment-card">
       <h3>${esc(eq.title)}</h3>
@@ -232,8 +235,8 @@
     }
     const fallbackTesla=window.FLYER_DATA?.products?.find(p=>p.tesla);const apiTesla=data.products?.find(p=>p.tesla);if(apiTesla&&(!Array.isArray(apiTesla.rows)||!apiTesla.rows.some(r=>Array.isArray(r.config))))apiTesla.rows=fallbackTesla?.rows||apiTesla.rows;
     render(data);
-    document.querySelectorAll('.pricing td:not(.config)').forEach(cell=>{cell.textContent=formatEuroText(cell.textContent);});
-    setupTeslaEditor(data);
+    document.querySelectorAll('.pricing td:not(.config)').forEach(cell=>{if(!cell.querySelector('input'))cell.textContent=formatEuroText(cell.textContent);});
+    setupTeslaPriceInputs();
     document.getElementById('printPdf').onclick=()=>window.print();
   }
   boot().catch(err=>{console.error(err);document.body.innerHTML=`<pre style="padding:24px">${esc(err.message)}</pre>`});
