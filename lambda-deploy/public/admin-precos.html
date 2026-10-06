@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Administração de preços · MacWatts</title>
+  <style>
+    :root{font-family:Inter,Arial,sans-serif;color:#223652;background:#f3f6f8}*{box-sizing:border-box}body{margin:0}.wrap{max-width:1100px;margin:0 auto;padding:36px 20px}h1{margin:0 0 8px;font-size:30px}.sub{color:#68798d;margin-bottom:28px}.card{background:#fff;border-radius:16px;padding:22px;box-shadow:0 5px 25px #22365212}.login{max-width:420px;margin:80px auto}.tabs{display:flex;gap:8px;margin-bottom:18px}.tab{border:1px solid #ccd6df;background:#fff;color:#223652;border-radius:8px;padding:10px 18px;font-weight:700;cursor:pointer}.tab.active{background:#223652;color:#fff;border-color:#223652}.row{display:grid;grid-template-columns:1.2fr 1.6fr 1.2fr 150px 100px;gap:14px;align-items:center;padding:13px 0;border-bottom:1px solid #e8edf1}.head{font-size:12px;text-transform:uppercase;color:#718094;font-weight:700}.category{font-weight:700}.muted{color:#718094;font-size:13px}.price{width:110px;padding:9px;border:1px solid #ccd6df;border-radius:8px;font-size:15px}.btn{border:0;border-radius:8px;padding:10px 14px;background:#08bd79;color:#fff;font-weight:700;cursor:pointer}.btn:disabled{opacity:.5}.btn.secondary{background:#223652}.message{margin:14px 0;color:#b34646}.ok{color:#13825e}@media(max-width:800px){.row{grid-template-columns:1fr 1fr}.head{display:none}.tabs{flex-wrap:wrap}}
+    .row.with-inverter{grid-template-columns:1.2fr 1.35fr 1.35fr 1.2fr 150px 100px}.inverter{width:100%;padding:9px;border:1px solid #ccd6df;border-radius:8px;font-size:15px}@media(max-width:800px){.row,.row.with-inverter{grid-template-columns:1fr 1fr}}
+  </style>
+  <style>
+    :root{--admin-navy:#18324d;--admin-navy-soft:#284f6d;--admin-green:#18c08f;--admin-green-dark:#0e7a5c;--admin-mint:#eaf8f3;--admin-bg:#f4f8f7;--admin-line:#dceae5;--admin-muted:#718094}
+    body{background:radial-gradient(circle at 90% 0%,#e6f8f0 0,transparent 32%),var(--admin-bg);color:var(--admin-navy)}
+    .wrap{max-width:1180px;padding:30px 24px 52px}
+    .admin-header{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:4px 2px 25px;margin-bottom:28px;border-bottom:1px solid var(--admin-line)}
+    .admin-brand{display:flex;align-items:center;gap:18px}
+    .admin-logo{display:flex;align-items:center;text-decoration:none}
+    .admin-logo img{display:block;width:178px;height:45px;object-fit:contain;object-position:left center}
+    .admin-header-copy{display:flex;flex-direction:column;border-left:1px solid var(--admin-line);padding-left:18px}
+    .admin-header-copy span{font-size:11px;text-transform:uppercase;letter-spacing:.13em;color:var(--admin-green-dark);font-weight:800}
+    .admin-header-copy strong{font-size:17px;letter-spacing:-.02em;margin-top:3px}
+    .admin-live{display:inline-flex;align-items:center;gap:9px;padding:10px 14px;border:1px solid #bfe8d8;border-radius:999px;background:#fff;color:var(--admin-green-dark);font-size:11px;font-weight:800;white-space:nowrap}
+    .admin-live:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--admin-green);box-shadow:0 0 0 4px #d9f5ea}
+    .card{border:1px solid var(--admin-line);border-radius:20px;padding:28px;box-shadow:0 18px 45px #18324d0d;background:rgba(255,255,255,.94)}
+    .login{max-width:460px;margin:72px auto 0;text-align:center;padding:38px 38px 34px}
+    .login:before{content:"";display:block;width:190px;height:48px;margin:0 auto 26px;background:url("flyer/assets/logo-cover.png") left center/contain no-repeat}
+    .login h1{font-size:28px;letter-spacing:-.035em;margin-bottom:10px}
+    .login .sub{max-width:300px;margin:0 auto 24px;line-height:1.5}
+    .login input{height:46px!important;border:1px solid #cfe1db!important;border-radius:11px!important;outline:none;transition:border-color .2s,box-shadow .2s}
+    .login input:focus{border-color:var(--admin-green)!important;box-shadow:0 0 0 4px #18c08f1c}
+    .btn{background:var(--admin-green);box-shadow:0 7px 16px #18c08f2e;transition:transform .2s,box-shadow .2s,background .2s}
+    .btn:hover{background:#11ad7f;box-shadow:0 10px 22px #18c08f3d;transform:translateY(-1px)}
+    .btn.secondary{background:var(--admin-navy);box-shadow:0 7px 16px #18324d22}
+    .btn.secondary:hover{background:var(--admin-navy-soft)}
+    #panel>h1{font-size:30px;letter-spacing:-.04em;margin-bottom:7px}
+    #panel>.sub{margin:0 0 22px;color:var(--admin-muted)}
+    .tabs{align-items:center;gap:8px;padding:8px;margin:0 0 16px;border:1px solid var(--admin-line);border-radius:15px;background:#fff;box-shadow:0 8px 25px #18324d08}
+    .tab{border:0;background:transparent;color:var(--admin-muted);border-radius:10px;padding:11px 15px;font-size:13px;font-weight:800;transition:background .2s,color .2s}
+    .tab:hover{color:var(--admin-navy);background:#f1f8f5}
+    .tab.active{background:var(--admin-mint);color:var(--admin-green-dark);border:0}
+    #saveAll{margin-left:auto!important;padding-left:17px;padding-right:17px}
+    #panel>.card{padding:18px;background:#fff;border-radius:16px}
+    #panel .row{grid-template-columns:minmax(145px,1.1fr) minmax(220px,1.8fr) minmax(120px,1.1fr) 138px 95px;gap:16px;padding:14px 12px;align-items:center;border:1px solid var(--admin-line);border-radius:11px;background:#fff}
+    #panel .row.head{border:0;border-radius:8px;background:#f1f8f5;color:var(--admin-green-dark);padding:10px 12px;letter-spacing:.06em}
+    #panel .row.with-inverter{grid-template-columns:minmax(120px,1.1fr) minmax(170px,1.4fr) minmax(160px,1.35fr) minmax(120px,1.1fr) 138px 95px}
+    #rows{display:grid;gap:8px;margin-top:9px}
+    #rows .row:hover{border-color:#bfe8d8;box-shadow:0 5px 15px #18324d08}
+    .category{font-size:11px;color:var(--admin-green-dark);text-transform:uppercase;letter-spacing:.04em}
+    .muted{color:var(--admin-muted);font-size:12px}
+    .price{height:39px;width:100%;border:1px solid #cfe1db;border-radius:9px;padding:8px 10px;color:var(--admin-navy);font-weight:750;outline:none;transition:border-color .2s,box-shadow .2s}
+    .price:focus,.inverter:focus{border-color:var(--admin-green);box-shadow:0 0 0 4px #18c08f1c}
+    .inverter{height:39px;border:1px solid #cfe1db!important;border-radius:9px!important;outline:none}
+    #rows .save{padding:9px 12px;font-size:12px}
+    #message{min-height:20px;margin:16px 4px 0;font-size:13px;font-weight:700}
+    .ok{color:var(--admin-green-dark)}
+    #gamaFilter{background:#fff;color:var(--admin-navy);outline:none}
+    #panel.charger-mode .row{grid-template-columns:minmax(135px,1fr) minmax(260px,2.4fr) 170px 100px}
+    #panel.charger-mode .row.head{grid-template-columns:minmax(135px,1fr) minmax(260px,2.4fr) 170px 100px}
+    .charger-editor{display:grid;gap:18px}
+    .charger-toolbar{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:4px 2px 2px}
+    .charger-toolbar strong{font-size:15px;color:var(--admin-navy)}
+    .charger-toolbar small{display:block;color:var(--admin-muted);font-size:11px;margin-top:4px}
+    .charger-search{width:min(100%,290px);height:39px;border:1px solid #cfe1db;border-radius:9px;padding:8px 12px;color:var(--admin-navy);outline:none}
+    .charger-search:focus{border-color:var(--admin-green);box-shadow:0 0 0 4px #18c08f1c}
+    .charger-group{display:grid;gap:8px}
+    .charger-group-title{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:0 3px 3px}
+    .charger-group-title strong{font-size:12px;color:var(--admin-green-dark);text-transform:uppercase;letter-spacing:.08em}
+    .charger-group-title span{font-size:11px;color:var(--admin-muted)}
+    .charger-group-rows{display:grid;gap:8px}
+    .charger-model{display:block;font-size:12px;color:var(--admin-navy)}
+    .charger-name{display:block;color:var(--admin-muted);font-size:11px;margin-top:3px}
+    .price-control{position:relative}
+    .price-control:after{content:"€";position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--admin-muted);font-size:12px;font-weight:800;pointer-events:none}
+    .price-control .price{padding-right:30px}
+    @media(max-width:800px){
+      .wrap{padding:20px 14px 36px}.admin-header{align-items:flex-start;flex-direction:column;gap:14px;margin-bottom:20px}.admin-brand{gap:12px}.admin-logo img{width:150px;height:38px}.admin-header-copy{padding-left:12px}.admin-live{font-size:10px}
+      .login{margin-top:38px;padding:30px 22px}.card{padding:20px 16px}.tabs{overflow-x:auto;flex-wrap:nowrap}.tabs .btn{flex:none}.tab{white-space:nowrap;padding:10px 12px}
+      #panel .row,#panel .row.with-inverter{grid-template-columns:1fr 1fr;gap:9px}.row.head{display:none!important}.row .category{font-size:10px}.row .price{width:100%}.row .save{width:100%}
+      #panel.charger-mode .row,#panel.charger-mode .row.head{grid-template-columns:1fr 1fr}.charger-toolbar{align-items:stretch;flex-direction:column;gap:10px}.charger-search{width:100%}.charger-group-title{padding-top:4px}
+    }
+  </style>
+</head>
+<body><main class="wrap">
+  <header class="admin-header"><div class="admin-brand"><a class="admin-logo" href="/"><img src="flyer/assets/logo-cover.png" alt="MacWatts"></a><div class="admin-header-copy"><span>Área reservada</span><strong>Gestão comercial</strong></div></div><div class="admin-live">Preços sincronizados com a base de dados</div></header>
+  <section id="login" class="card login"><h1>Preços MacWatts</h1><p class="sub">Área reservada para atualizar os preços das propostas.</p><input id="password" type="password" placeholder="Palavra-passe" autocomplete="current-password" style="width:100%;padding:12px;border:1px solid #ccd6df;border-radius:8px"><button id="loginBtn" class="btn" style="margin-top:12px;width:100%">Entrar</button><p id="loginMessage" class="message"></p></section>
+  <section id="panel" hidden><h1>Gestão de preços</h1><p class="sub">Altera os valores e guarda todas as alterações da aba de uma vez.</p><div class="tabs"><button class="tab active" data-category="Painéis / configuração">Painéis</button><button class="tab" data-category="Bateria">Baterias</button><button class="tab" data-category="Backup">Backup</button><button id="saveAll" class="btn" style="margin-left:auto">Guardar alterações</button></div><div class="card"><div class="row head"><div>Tipo</div><div>Item</div><div>Gama</div><div>Preço (€)</div><div></div></div><div id="rows"></div><p id="message" class="message"></p></div></section>
+</main><script src="/config.js"></script><script>
+const api=(window.MACWATTS_CONFIG?.apiBaseUrl||'').replace(/\/$/,'');let password='',allRows=[],activeCategory='Painéis / configuração';
+const $=id=>document.getElementById(id);function msg(text,ok=false){$('message').textContent=text;$('message').className=ok?'message ok':'message'}
+async function adminRequest(body){return fetch(api+'/api/admin/prices',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...body,password})})}
+async function load(){const r=await adminRequest({action:'list'});if(!r.ok)throw new Error(await r.text());allRows=await r.json();setupGamaFilter();renderRows()}
+function renderRows(){const data=allRows.filter(row=>row.category===activeCategory);$('rows').innerHTML=data.map(row=>`<div class="row"><div class="category">${esc(row.category)}</div><div>${esc(row.label)}</div><div class="muted">${esc(row.gama)}</div><div><input class="price" type="number" min="0" step="0.01" value="${row.price}" data-original="${row.price}" data-table="${row.table}" data-id="${row.id}"></div><button class="btn secondary save">Guardar</button></div>`).join('');document.querySelectorAll('.save').forEach(b=>b.onclick=save)}
+async function update(input){const r=await adminRequest({table:input.dataset.table,id:input.dataset.id,price:input.value});if(!r.ok)throw new Error(await r.text())}
+async function save(e){const input=e.target.closest('.row').querySelector('.price');e.target.disabled=true;try{await update(input);input.dataset.original=input.value;msg('Preço guardado com sucesso.',true)}catch(x){msg(x.message)}finally{e.target.disabled=false}}
+async function saveAll(){const button=$('saveAll'),inputs=[...document.querySelectorAll('.price')].filter(input=>input.dataset.original!==input.value);if(!inputs.length){msg('Não existem alterações por guardar.',true);return}button.disabled=true;try{await Promise.all(inputs.map(update));inputs.forEach(input=>input.dataset.original=input.value);msg(`${inputs.length} alteração(ões) guardada(s) com sucesso.`,true)}catch(x){msg(x.message)}finally{button.disabled=false}}
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+async function login(){password=$('password').value;try{await load();$('login').hidden=true;$('panel').hidden=false}catch(e){$('loginMessage').textContent=e.message;password=''}}$('loginBtn').onclick=login;$('password').onkeydown=e=>{if(e.key==='Enter')login()};$('saveAll').onclick=saveAll;document.querySelectorAll('.tab').forEach(tab=>tab.onclick=()=>{activeCategory=tab.dataset.category;document.querySelectorAll('.tab').forEach(item=>item.classList.toggle('active',item===tab));renderRows()});
+function renderRows(){const data=allRows.filter(row=>row.category===activeCategory);$('rows').innerHTML=data.map(row=>`<div class="row"><div class="category">${esc(row.category)}</div><div>${esc(row.label)}${row.inverter!==undefined?`<input class="inverter" type="text" value="${esc(row.inverter)}" data-original="${esc(row.inverter)}" data-id="${row.configId}" placeholder="Inversor">`:''}</div><div class="muted">${esc(row.gama)}</div><div><input class="price" type="number" min="0" step="0.01" value="${row.price}" data-original="${row.price}" data-table="${row.table}" data-id="${row.id}"></div><button class="btn secondary save">Guardar</button></div>`).join('');document.querySelectorAll('.save').forEach(b=>b.onclick=save)}
+async function save(e){const row=e.target.closest('.row'),input=row.querySelector('.price'),inverter=row.querySelector('.inverter');e.target.disabled=true;try{await update(input);if(inverter&&inverter.dataset.original!==inverter.value){const r=await adminRequest({field:'inverter',id:inverter.dataset.id,value:inverter.value});if(!r.ok)throw new Error(await r.text());inverter.dataset.original=inverter.value}input.dataset.original=input.value;msg('Alterações guardadas com sucesso.',true)}catch(x){msg(x.message)}finally{e.target.disabled=false}}
+renderRows=function(){const data=allRows.filter(row=>row.category===activeCategory);document.querySelector('.head').innerHTML='<div>Tipo</div><div>Item</div><div>Inversor</div><div>Gama</div><div>Preço (€)</div><div></div>';$('rows').innerHTML=data.map(row=>`<div class="row"><div class="category">${esc(row.category)}</div><div>${esc(row.label)}</div><div>${row.inverter!==undefined?`<input class="inverter" type="text" value="${esc(row.inverter)}" data-original="${esc(row.inverter)}" data-id="${row.configId}" placeholder="Inversor">`:''}</div><div class="muted">${esc(row.gama)}</div><div><input class="price" type="number" min="0" step="0.01" value="${row.price}" data-original="${row.price}" data-table="${row.table}" data-id="${row.id}"></div><button class="btn secondary save">Guardar</button></div>`).join('');document.querySelectorAll('.save').forEach(b=>b.onclick=save)};
+function normalizeInverterColumn(){const panelRows=allRows.filter(row=>row.category===activeCategory),hasInverter=panelRows.some(row=>row.inverter!==undefined),head=document.querySelector('.head');head.classList.toggle('with-inverter',hasInverter);head.children[2].hidden=!hasInverter;document.querySelectorAll('#rows .row').forEach(row=>{row.classList.toggle('with-inverter',hasInverter);if(row.children[2])row.children[2].hidden=!hasInverter})}new MutationObserver(normalizeInverterColumn).observe($('rows'),{childList:true});
+let activeGama='';
+function setupGamaFilter(){if($('gamaFilter'))return;const label=document.createElement('label');label.style.cssText='display:flex;align-items:center;gap:7px;margin-left:auto;font-weight:700';label.textContent='Gama ';const select=document.createElement('select');select.id='gamaFilter';select.style.cssText='padding:9px;border:1px solid #ccd6df;border-radius:8px';const gamas=[...new Set(allRows.map(row=>row.gama).filter(Boolean))];select.innerHTML='<option value="">Todas</option>'+gamas.map(g=>`<option value="${esc(g)}">${esc(g)}</option>`).join('');select.onchange=()=>{activeGama=select.value;renderRows()};label.appendChild(select);$('saveAll').insertAdjacentElement('beforebegin',label)}
+const baseRenderRows=renderRows;renderRows=function(){const rows=allRows;if(activeGama)allRows=rows.filter(row=>row.gama===activeGama);baseRenderRows();allRows=rows};
+const flyerButton=document.createElement('button');flyerButton.type='button';flyerButton.className='btn secondary';flyerButton.textContent='Abrir flyer';flyerButton.onclick=()=>window.open('/flyer/index.html','_blank','noopener');document.getElementById('saveAll').insertAdjacentElement('afterend',flyerButton);
+</script><script>
+const chargerFlyerButton=document.createElement('button');chargerFlyerButton.type='button';chargerFlyerButton.className='btn secondary';chargerFlyerButton.textContent='Abrir flyer carregadores';chargerFlyerButton.title='Abrir o flyer de carregadores AC e portátil';chargerFlyerButton.onclick=()=>window.open('/flyer-carregadores.html','_blank','noopener,noreferrer');document.getElementById('saveAll').insertAdjacentElement('afterend',chargerFlyerButton);
+</script>
+<script>
+(() => {
+  const apiBase = (window.MACWATTS_CONFIG?.apiBaseUrl || "").replace(/\/$/, "");
+  const chargerAdminRequest = (body) => fetch(`${apiBase}/api/admin/charger-prices`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...body, password })
+  });
+  update = async function(input) {
+    const response = await (input.dataset.table === "precos_carregadores" ? chargerAdminRequest({
+      id: input.dataset.id,
+      price: input.value
+    }) : adminRequest({
+      table: input.dataset.table,
+      id: input.dataset.id,
+      price: input.value
+    }));
+    if (!response.ok) throw new Error(await response.text());
+  };
+  save = async function(e) {
+    const row = e.target.closest('.row');
+    const input = row.querySelector('.price');
+    const inverter = row.querySelector('.inverter');
+    e.target.disabled = true;
+    try {
+      await update(input);
+      if (inverter && inverter.dataset.original !== inverter.value) {
+        const response = await adminRequest({ field: 'inverter', id: inverter.dataset.id, value: inverter.value });
+        if (!response.ok) throw new Error(await response.text());
+      }
+      await load();
+      msg('Preço guardado e tabela atualizada.', true);
+    } catch (error) {
+      msg(error.message);
+    } finally {
+      e.target.disabled = false;
+    }
+  };
+  saveAll = async function() {
+    const button = $('saveAll');
+    const inputs = [...document.querySelectorAll('.price')].filter((input) => input.dataset.original !== input.value);
+    if (!inputs.length) { msg('Não existem alterações por guardar.', true); return; }
+    button.disabled = true;
+    try {
+      await Promise.all(inputs.map(update));
+      await load();
+      msg(`${inputs.length} alteração(ões) guardada(s) e tabela atualizada.`, true);
+    } catch (error) {
+      msg(error.message);
+    } finally {
+      button.disabled = false;
+    }
+  };
+  load = async function() {
+    const [pricesResponse, chargersResponse] = await Promise.all([
+      adminRequest({ action: "list" }),
+      chargerAdminRequest({ action: "list" })
+    ]);
+    if (!pricesResponse.ok) throw new Error(await pricesResponse.text());
+    allRows = await pricesResponse.json();
+    if (chargersResponse.ok) allRows.push(...await chargersResponse.json());
+    setupGamaFilter();
+    renderRows();
+  };
+  const tab = document.createElement("button");
+  tab.type = "button";
+  tab.className = "tab";
+  tab.dataset.category = "Carregadores";
+  tab.textContent = "Carregadores";
+  tab.onclick = () => {
+    activeCategory = "Carregadores";
+    document.querySelectorAll(".tab").forEach((item) => item.classList.toggle("active", item === tab));
+    renderRows();
+  };
+  document.querySelector(".tabs")?.insertBefore(tab, document.getElementById("saveAll"));
+  let chargerSearchTerm = "";
+  const defaultRenderRows = renderRows;
+  const defaultNormalizeInverterColumn = normalizeInverterColumn;
+  normalizeInverterColumn = function() {
+    if (activeCategory === "Carregadores") {
+      const head = document.querySelector(".head");
+      head.classList.remove("with-inverter");
+      [...head.children].forEach((child) => { child.hidden = false; });
+      document.querySelectorAll("#rows .row").forEach((row) => {
+        row.classList.remove("with-inverter");
+        if (row.children[2]) row.children[2].hidden = false;
+      });
+      return;
+    }
+    defaultNormalizeInverterColumn();
+  };
+  function filterChargerRows() {
+    const query = chargerSearchTerm.trim().toLocaleLowerCase();
+    document.querySelectorAll(".charger-group").forEach((group) => {
+      let visible = 0;
+      group.querySelectorAll(".charger-price-row").forEach((row) => {
+        const show = !query || row.dataset.search.includes(query);
+        row.hidden = !show;
+        if (show) visible += 1;
+      });
+      group.hidden = visible === 0;
+    });
+  }
+  function renderChargerRows() {
+    const panel = $("panel");
+    panel.classList.add("charger-mode");
+    const head = document.querySelector(".head");
+    head.classList.remove("with-inverter");
+    head.innerHTML = "<div>Secção</div><div>Modelo / equipamento</div><div>Preço sem IVA</div><div></div>";
+    const sections = ["Monofásicos", "Trifásicos", "Instalação", "Portátil"];
+    const groups = sections.map((section) => {
+      const sectionRows = allRows.filter((row) => row.category === "Carregadores" && row.gama === section && (!activeGama || row.gama === activeGama));
+      if (!sectionRows.length) return "";
+      const rowsHtml = sectionRows.map((row) => {
+        const code = row.chargerCode || row.label;
+        const search = (code + " " + row.label + " " + row.gama).toLocaleLowerCase();
+        return '<div class="row charger-price-row" data-search="' + esc(search) + '"><div class="category">' + esc(row.gama) + '</div><div><strong class="charger-model">' + esc(code) + '</strong><small class="charger-name">' + esc(row.label === code ? "" : row.label) + '</small></div><div class="price-control"><input class="price" type="number" min="0" step="0.01" value="' + esc(row.price) + '" data-original="' + esc(row.price) + '" data-table="' + esc(row.table) + '" data-id="' + esc(row.id) + '"></div><button class="btn secondary save" type="button">Guardar</button></div>';
+      }).join("");
+      return '<section class="charger-group"><div class="charger-group-title"><strong>' + section + '</strong><span>' + sectionRows.length + ' item(ns)</span></div><div class="charger-group-rows">' + rowsHtml + '</div></section>';
+    }).join("");
+    $("rows").innerHTML = '<div class="charger-editor"><div class="charger-toolbar"><div><strong>Preços dos carregadores</strong><small>Todos os valores apresentados sem IVA</small></div><input id="chargerSearch" class="charger-search" type="search" placeholder="Pesquisar modelo ou código"></div>' + (groups || "<p class='muted'>Não existem preços de carregadores disponíveis.</p>") + "</div>";
+    const search = $("chargerSearch");
+    search.value = chargerSearchTerm;
+    search.oninput = () => { chargerSearchTerm = search.value; filterChargerRows(); };
+    document.querySelectorAll(".charger-price-row .save").forEach((button) => { button.onclick = save; });
+    filterChargerRows();
+  }
+  renderRows = function() {
+    if (activeCategory === "Carregadores") {
+      renderChargerRows();
+      return;
+    }
+    $("panel").classList.remove("charger-mode");
+    defaultRenderRows();
+  };
+})();
+</script>
+</body></html>

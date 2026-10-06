@@ -1,0 +1,174 @@
+const express = require("express");
+const path = require("path");
+
+const { sendQuoteEmail } = require("./services/quoteEmailService");
+const { saveSimulation } = require("./services/supabaseSimulationService");
+const { getPrices } = require("./services/supabasePriceService");
+const { getFlyerData } = require("./services/flyerService");
+const { getAdminPrices, updateAdminPrice, updateAdminInverter } = require("./services/supabaseAdminPriceService");
+const { getChargerPrices, getAdminChargerPrices, updateChargerPrice } = require("./services/supabaseChargerPriceService");
+
+function createApp() {
+  const app = express();
+  const staticDir = path.join(__dirname, "..", "public");
+
+  app.use((req, res, next) => {
+    const allowedOrigin = process.env.CORS_ORIGIN || "*";
+    res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
+    res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type,Authorization");
+    if (req.method === "OPTIONS") {
+      return res.status(204).end();
+    }
+    next();
+  });
+
+  app.use(express.json({ limit: process.env.JSON_LIMIT || "35mb" }));
+  app.use(express.text({ type: "text/plain", limit: process.env.JSON_LIMIT || "35mb" }));
+  app.use(express.urlencoded({ extended: true, limit: process.env.JSON_LIMIT || "35mb" }));
+  app.use(express.static(staticDir));
+
+  app.get("/", (req, res) => {
+    res.sendFile(path.join(staticDir, "geocoding.html"));
+  });
+
+  app.get("/healthz", (req, res) => {
+    res.status(200).send("ok");
+  });
+
+  app.post("/api/quote/email", async (req, res) => {
+    const request = req.body || {};
+    const clientName = String(request.clientName || "").trim();
+    const clientEmail = String(request.clientEmail || "").trim();
+    const clientNif = String(request.clientNif || "").trim();
+
+    if (!clientName || !clientEmail) {
+      return res.status(400).send("Campos obrigatorios: clientName, clientEmail.");
+    }
+    if (!clientNif) {
+      return res.status(400).send("Campo obrigatorio: clientNif.");
+    }
+    if (!/^\d{9}$/.test(clientNif)) {
+      return res.status(400).send("Campo invalido: clientNif deve ter 9 digitos.");
+    }
+
+    request.clientName = clientName;
+    request.clientEmail = clientEmail;
+    request.clientNif = clientNif;
+
+    try {
+      try {
+        await saveSimulation(request);
+      } catch (error) {
+        console.warn("Simulação não guardada no Supabase:", rootMessage(error));
+      }
+      const sent = await sendQuoteEmailBestEffort(request);
+      if (!sent) {
+        return res.send("Pedido processado. O email para a empresa nao foi enviado.");
+      }
+      return res.send("Pedido processado e email enviado com sucesso para a empresa.");
+    } catch (error) {
+      const message = rootMessage(error);
+      if (error.name === "ValidationError" || error.name === "ConfigurationError") {
+        console.warn("Pedido de orcamento rejeitado:", message);
+        return res.status(400).send(message);
+      }
+      console.error("Falha inesperada ao processar o pedido de orcamento:", error);
+      return res.status(500).send(`Falha no processamento: ${message}`);
+    }
+  });
+
+  app.get("/api/prices", async (req, res) => {
+    try { return res.json(await getPrices()); }
+    catch (error) { return res.status(error.name === "ConfigurationError" ? 503 : 500).send(rootMessage(error)); }
+  });
+
+  app.get("/api/admin/prices", async (req, res) => {
+    if (!isAdminPriceRequest(req)) return res.status(401).send("Não autorizado.");
+    try { return res.json(await getAdminPrices()); }
+    catch (error) { return res.status(500).send(rootMessage(error)); }
+  });
+
+  app.get("/api/flyer", async (req, res) => {
+    try { return res.json(await getFlyerData()); }
+    catch (error) { return res.status(500).json({ error: rootMessage(error) }); }
+  });
+
+  app.get("/api/charger-prices", async (req, res) => {
+    try { return res.json(await getChargerPrices()); }
+    catch (error) { return res.status(500).json({ error: rootMessage(error) }); }
+  });
+
+  app.patch("/api/admin/prices", async (req, res) => {
+    if (!isAdminPriceRequest(req)) return res.status(401).send("Não autorizado.");
+    try {
+      await updateAdminPrice(req.body?.table, req.body?.id, req.body?.price);
+      return res.json({ ok: true });
+    } catch (error) { return res.status(400).send(rootMessage(error)); }
+  });
+
+  app.post("/api/admin/prices", async (req, res) => {
+    if (req.body?.password !== process.env.ADMIN_PRICES_PASSWORD) return res.status(401).send("Não autorizado.");
+    try {
+      if (req.body?.action === "list") return res.json(await getAdminPrices());
+      if (req.body?.field === "inverter") { await updateAdminInverter(req.body?.id, req.body?.value); return res.json({ ok: true }); }
+      await updateAdminPrice(req.body?.table, req.body?.id, req.body?.price);
+      return res.json({ ok: true });
+    } catch (error) { return res.status(400).send(rootMessage(error)); }
+  });
+
+  app.post("/api/admin/charger-prices", async (req, res) => {
+    if (req.body?.password !== process.env.ADMIN_PRICES_PASSWORD) return res.status(401).send("Não autorizado.");
+    try {
+      if (req.body?.action === "list") return res.json(await getAdminChargerPrices());
+      await updateChargerPrice(req.body?.id, req.body?.price);
+      return res.json({ ok: true });
+    } catch (error) { return res.status(400).send(rootMessage(error)); }
+  });
+
+  app.post("/api/quote/html", async (req, res) => {
+    try {
+      const { renderQuoteHtml } = require("./services/quotePdfService");
+      res.type("html").send(await renderQuoteHtml(parseBody(req.body)));
+    } catch (error) {
+      res.status(500).send(`Falha ao gerar a proposta HTML: ${rootMessage(error)}`);
+    }
+  });
+
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(staticDir, "geocoding.html"));
+  });
+
+  return app;
+}
+
+function rootMessage(error) {
+  let current = error;
+  while (current && current.cause) {
+    current = current.cause;
+  }
+  return (current && current.message) || error.message || "erro desconhecido";
+}
+
+function isAdminPriceRequest(req) {
+  const configured = String(process.env.ADMIN_PRICES_PASSWORD || "");
+  const supplied = String(req.get("x-admin-password") || "");
+  return Boolean(configured && supplied && supplied === configured);
+}
+
+function parseBody(body) {
+  if (!body) return {};
+  if (typeof body !== "string") return body;
+  try { return JSON.parse(body); } catch (error) { return {}; }
+}
+
+async function sendQuoteEmailBestEffort(request) {
+  try {
+    return await sendQuoteEmail(request);
+  } catch (error) {
+    console.warn("Pedido guardado, mas falhou o envio do email para a empresa:", rootMessage(error));
+    return false;
+  }
+}
+
+module.exports = { createApp };
