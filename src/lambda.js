@@ -1,6 +1,7 @@
 const { sendQuoteEmail } = require("./services/quoteEmailService");
 const { saveSimulation } = require("./services/supabaseSimulationService");
 const { getAdminPrices, updateAdminPrice, updateAdminInverter } = require("./services/supabaseAdminPriceService");
+const { getChargerPrices, getAdminChargerPrices, updateChargerPrice } = require("./services/supabaseChargerPriceService");
 const { getFlyerData } = require("./services/flyerService");
 
 const LAMBDA_VERSION = "lambda-direct-v3";
@@ -45,6 +46,9 @@ async function handle(event) {
   if (method === "GET" && path === "/api/flyer") {
     return jsonResponse(200, await getFlyerData());
   }
+  if (method === "GET" && path === "/api/charger-prices") {
+    return jsonResponse(200, await getChargerPrices());
+  }
   if (method === "PATCH" && path === "/api/admin/prices") {
     const request = parseBody(event);
     await updateAdminPrice(request.table, request.id, request.price);
@@ -56,6 +60,13 @@ async function handle(event) {
     if (request.action === "list") return jsonResponse(200, await getAdminPrices());
     if (request.field === "inverter") { await updateAdminInverter(request.id, request.value); return jsonResponse(200, { ok: true }); }
     await updateAdminPrice(request.table, request.id, request.price);
+    return jsonResponse(200, { ok: true });
+  }
+  if (method === "POST" && path === "/api/admin/charger-prices") {
+    const request = parseBody(event);
+    if (!process.env.ADMIN_PRICES_PASSWORD || request.password !== process.env.ADMIN_PRICES_PASSWORD) return response(401, "Não autorizado.");
+    if (request.action === "list") return jsonResponse(200, await getAdminChargerPrices());
+    await updateChargerPrice(request.id, request.price);
     return jsonResponse(200, { ok: true });
   }
 

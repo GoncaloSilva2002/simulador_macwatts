@@ -5,7 +5,9 @@ const { createApp } = require("./app");
 const app = createApp();
 const port = Number(process.env.PORT || 8080);
 
-const server = app.listen(port, "0.0.0.0", () => {
+// Sem host explícito, o Node aceita localhost em IPv4/IPv6 e continua
+// acessível no container/serviço de produção quando IPv6 não está disponível.
+const server = app.listen(port, () => {
   console.log(`Servidor Node.js iniciado em http://localhost:${port}`);
 });
 

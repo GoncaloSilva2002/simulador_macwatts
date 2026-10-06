@@ -6,6 +6,7 @@ const { saveSimulation } = require("./services/supabaseSimulationService");
 const { getPrices } = require("./services/supabasePriceService");
 const { getFlyerData } = require("./services/flyerService");
 const { getAdminPrices, updateAdminPrice, updateAdminInverter } = require("./services/supabaseAdminPriceService");
+const { getChargerPrices, getAdminChargerPrices, updateChargerPrice } = require("./services/supabaseChargerPriceService");
 
 function createApp() {
   const app = express();
@@ -93,6 +94,11 @@ function createApp() {
     catch (error) { return res.status(500).json({ error: rootMessage(error) }); }
   });
 
+  app.get("/api/charger-prices", async (req, res) => {
+    try { return res.json(await getChargerPrices()); }
+    catch (error) { return res.status(500).json({ error: rootMessage(error) }); }
+  });
+
   app.patch("/api/admin/prices", async (req, res) => {
     if (!isAdminPriceRequest(req)) return res.status(401).send("Não autorizado.");
     try {
@@ -107,6 +113,15 @@ function createApp() {
       if (req.body?.action === "list") return res.json(await getAdminPrices());
       if (req.body?.field === "inverter") { await updateAdminInverter(req.body?.id, req.body?.value); return res.json({ ok: true }); }
       await updateAdminPrice(req.body?.table, req.body?.id, req.body?.price);
+      return res.json({ ok: true });
+    } catch (error) { return res.status(400).send(rootMessage(error)); }
+  });
+
+  app.post("/api/admin/charger-prices", async (req, res) => {
+    if (req.body?.password !== process.env.ADMIN_PRICES_PASSWORD) return res.status(401).send("Não autorizado.");
+    try {
+      if (req.body?.action === "list") return res.json(await getAdminChargerPrices());
+      await updateChargerPrice(req.body?.id, req.body?.price);
       return res.json({ ok: true });
     } catch (error) { return res.status(400).send(rootMessage(error)); }
   });

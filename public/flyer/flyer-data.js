@@ -4,7 +4,7 @@ window.FLYER_DATA = {
     "tagline": "Quer diminuir a sua fatura de eletricidade?",
     "website": "www.macwatts.pt",
     "email": "geral@macwatts.pt",
-    "phone": "+351 927 855 924",
+    "phone": "+351 912 897 942",
     "year": 2026
   },
   "cover": {
@@ -774,7 +774,6 @@ window.FLYER_DATA = {
     {
       "title": "CONDIÇÕES TÉCNICAS DA INSTALAÇÃO",
       "items": [
-        "Painéis solares com potência mínima de 530 W;",
         "Para o Kit Fotovoltaico de 2 painéis (monofásico) e 4 painéis (trifásico) está contemplada a instalação de microinversores;",
         "Estrutura em alumínio adaptável a qualquer tipo de telhado;",
         "Cabo DC até 60 m;",
