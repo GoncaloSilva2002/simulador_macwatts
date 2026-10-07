@@ -163,7 +163,7 @@ window.FLYER_DATA = {
           "image": "panel_base.png",
           "bullets": [
             "Tecnologia N-Type TOPCon",
-            "Potência ≥ 470 W",
+            "Potência ≥ 530 W",
             "12 anos de garantia",
             "30 anos garantia de produção",
             "Eficiência ≥ 22%"
@@ -329,7 +329,7 @@ window.FLYER_DATA = {
           "image": "panel_premium.png",
           "bullets": [
             "Tecnologia N-Type TOPCon",
-            "Potência ≥ 470 W",
+            "Potência ≥ 530 W",
             "≥ 15 anos de garantia",
             "30 anos garantia de produção",
             "Eficiência ≥ 22%"

@@ -137,6 +137,9 @@
     .category-battery { color: #88621a; background: #fff6dc; border-color: #f0d997; }
     .category-backup { color: #315c91; background: #eaf3ff; border-color: #c6dcf6; }
     .category-chargers { color: #087b8b; background: #e5f8fb; border-color: #b9e7ed; }
+    .phase-heading td { padding: 12px 6px 3px; color: var(--muted); background: transparent; border: 0 !important; border-radius: 0 !important; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .phase-heading td span { display: inline-flex; align-items: center; gap: 8px; }
+    .phase-heading td span::before { content: ""; width: 22px; height: 2px; background: var(--green); border-radius: 99px; }
     .product { color: var(--ink); font-weight: 750; }
     .product small { display: block; margin-top: 4px; color: var(--muted); font-size: 11px; font-weight: 400; }
     .muted { color: var(--muted); font-size: 12px; }
@@ -157,6 +160,10 @@
     .save-dock-copy { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; white-space: nowrap; }
     .save-dock-copy strong { display: grid; width: 25px; height: 25px; place-items: center; color: var(--navy); background: #fff2c9; border-radius: 50%; font-size: 12px; }
     .save-dock .btn { min-height: 36px; padding: 8px 13px; }
+    .toast { position: fixed; right: 24px; bottom: 24px; z-index: 20; max-width: min(420px, calc(100vw - 48px)); padding: 13px 16px; color: #fff; background: var(--navy); border: 1px solid rgba(255,255,255,.14); border-radius: 12px; box-shadow: 0 14px 32px rgba(16,43,70,.22); font-size: 13px; font-weight: 700; opacity: 0; pointer-events: none; transform: translateY(10px); transition: opacity .2s, transform .2s; }
+    .toast.visible { opacity: 1; transform: translateY(0); }
+    .toast.ok { background: #087a59; }
+    .toast.error { background: #a63e49; }
 
     @media (max-width: 800px) {
       .wrap { padding: 20px 14px 36px; }
@@ -173,6 +180,21 @@
       .table-card { padding: 7px; }
       .save-dock { left: 14px; right: 14px; justify-content: space-between; transform: none; }
       .save-dock-copy { overflow: hidden; text-overflow: ellipsis; }
+      .toast { right: 14px; bottom: 84px; max-width: calc(100vw - 28px); }
+      table, tbody { display: block; min-width: 0; }
+      thead { display: none; }
+      tr:not(.phase-heading) { display: block; padding: 12px 14px; margin: 9px 0; background: #fff; border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 7px 18px rgba(16,43,70,.055); }
+      tr:not(.phase-heading) td, tr:not(.phase-heading) td:first-child, tr:not(.phase-heading) td:last-child { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; padding: 7px 0; background: transparent; border: 0; border-radius: 0; }
+      tr:not(.phase-heading) td::before { content: attr(data-label); color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
+      tr:not(.phase-heading) td:nth-child(2) { display: block; padding: 4px 0 9px; border-bottom: 1px solid var(--line); }
+      tr:not(.phase-heading) td:nth-child(2)::before { display: block; margin-bottom: 5px; }
+      tr:not(.phase-heading) td:nth-child(5) { padding-top: 10px; }
+      tr:not(.phase-heading) .price-cell { width: 170px; }
+      tr:not(.phase-heading) .price-wrap { width: 170px; }
+      tr:not(.phase-heading) .inverter-input { max-width: 170px; }
+      .phase-heading td { display: block; padding: 13px 4px 3px; }
+      .phase-heading td::before { display: none; }
+      .empty { display: block !important; }
     }
   </style>
 </head>
@@ -229,6 +251,7 @@
       </div>
     </section>
   </main>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script src="/config.js"></script>
   <script>
@@ -237,6 +260,7 @@
     let password = '';
     let allRows = [];
     let drafts = new Map();
+    let toastTimer;
 
     function esc(value) {
       return String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[char]));
@@ -262,6 +286,12 @@
     function showMessage(text, kind = 'info', target = 'message') {
       $(target).textContent = text;
       $(target).className = `message ${kind}`;
+      if (target === 'message') {
+        clearTimeout(toastTimer);
+        $('toast').textContent = text;
+        $('toast').className = `toast ${kind} visible`;
+        toastTimer = setTimeout(() => { $('toast').className = 'toast'; }, 3600);
+      }
     }
 
     function updateSaveState() {
@@ -383,6 +413,15 @@
       return sortPanelRows(rows);
     }
 
+    function panelGroupLabel(row) {
+      const category = normalizeFilterValue(row.category);
+      if (!category.includes('paineis') || !category.includes('configuracao')) return '';
+      const order = panelPhaseOrder(row);
+      if (order === 0) return 'Monofásicos';
+      if (order === 1) return 'Trifásicos';
+      return 'Outros painéis';
+    }
+
     function renderRows() {
       const rows = filteredRows();
       $('visibleCount').textContent = rows.length;
@@ -392,7 +431,13 @@
         return;
       }
 
+      let previousPanelGroup = '';
       $('rows').innerHTML = rows.map((row) => {
+        const panelGroup = panelGroupLabel(row);
+        const groupHeading = panelGroup && panelGroup !== previousPanelGroup
+          ? `<tr class="phase-heading"><td colspan="5"><span>${panelGroup}</span></td></tr>`
+          : '';
+        if (panelGroup) previousPanelGroup = panelGroup;
         const draft = draftFor(row);
         const changed = drafts.has(rowKey(row));
         const isCharger = row.category === 'Carregadores';
@@ -401,12 +446,12 @@
         const inverter = row.inverter !== undefined
           ? `<input class="inverter-input${changed && draft.inverter !== originalValue(row.inverter) ? ' changed' : ''}" type="text" value="${esc(draft.inverter)}" data-key="${esc(rowKey(row))}" placeholder="Inversor">`
           : '<span class="muted">—</span>';
-        return `<tr>
-          <td><span class="category ${categoryClass(row.category)}">${esc(row.category)}</span></td>
-          <td><div class="product">${product}</div></td>
-          <td class="muted">${esc(row.gama)}</td>
-          <td>${inverter}</td>
-          <td class="price-cell"><div class="price-wrap"><input class="price-input${changed && draft.price !== originalValue(row.price) ? ' changed' : ''}" type="number" min="0" step="0.01" value="${esc(draft.price)}" data-key="${esc(rowKey(row))}"></div></td>
+        return `${groupHeading}<tr>
+          <td data-label="Categoria"><span class="category ${categoryClass(row.category)}">${esc(row.category)}</span></td>
+          <td data-label="Produto"><div class="product">${product}</div></td>
+          <td data-label="Gama" class="muted">${esc(row.gama)}</td>
+          <td data-label="Inversor">${inverter}</td>
+          <td data-label="Preço" class="price-cell"><div class="price-wrap"><input class="price-input${changed && draft.price !== originalValue(row.price) ? ' changed' : ''}" type="number" min="0" step="0.01" value="${esc(draft.price)}" data-key="${esc(rowKey(row))}"></div></td>
         </tr>`;
       }).join('');
 
