@@ -163,7 +163,7 @@ window.FLYER_DATA = {
           "image": "panel_base.png",
           "bullets": [
             "Tecnologia N-Type TOPCon",
-            "Potência ≥ 530 W",
+            "Potência ≥ 470 W",
             "12 anos de garantia",
             "30 anos garantia de produção",
             "Eficiência ≥ 22%"
@@ -329,7 +329,7 @@ window.FLYER_DATA = {
           "image": "panel_premium.png",
           "bullets": [
             "Tecnologia N-Type TOPCon",
-            "Potência ≥ 530 W",
+            "Potência ≥ 470 W",
             "≥ 15 anos de garantia",
             "30 anos garantia de produção",
             "Eficiência ≥ 22%"
@@ -496,7 +496,7 @@ window.FLYER_DATA = {
           "bullets": [
             "Tecnologia N-Type TOPCon",
             "All-Black",
-            "Potência ≥ 530 W",
+            "Potência ≥ 470 W",
             "25 anos de garantia",
             "25 anos garantia de produção",
             "Eficiência ≥ 22%"
@@ -721,7 +721,7 @@ window.FLYER_DATA = {
           "bullets": [
             "Tecnologia N-Type TOPCon",
             "All-Black",
-            "Potência ≥ 530 W",
+            "Potência ≥ 470 W",
             "25 anos de garantia",
             "25 anos garantia de produção",
             "Eficiência ≥ 22%"
