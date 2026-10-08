@@ -1,12 +1,12 @@
 const { sendQuoteEmail } = require("./services/quoteEmailService");
 const { saveSimulation } = require("./services/supabaseSimulationService");
 const { getAdminPrices, updateAdminPrice, updateAdminInverter } = require("./services/supabaseAdminPriceService");
-const { getAdminProposals, getAdminProposal, saveAdminProposal } = require("./services/supabaseProposalService");
+const { getAdminProposals, getAdminProposal, saveAdminProposal, markAdminProposalSent } = require("./services/supabaseProposalService");
 const { getChargerPrices, getAdminChargerPrices, updateChargerPrice } = require("./services/supabaseChargerPriceService");
 const { getFlyerData } = require("./services/flyerService");
 const { renderQuoteHtml } = require("./services/quotePdfService");
 
-const LAMBDA_VERSION = "lambda-direct-v4";
+const LAMBDA_VERSION = "lambda-direct-v5";
 
 exports.handler = async (event) => {
   try {
@@ -133,7 +133,7 @@ async function handle(event) {
     const sent = await sendQuoteEmailBestEffort(request);
     if (sent && savedProposal?.id) {
       try {
-        await saveAdminProposal({ ...request, id: savedProposal.id, status: "enviada" });
+        await markAdminProposalSent(savedProposal.id);
       } catch (error) {
         console.warn("Estado da proposta nao atualizado para enviada:", rootMessage(error));
       }

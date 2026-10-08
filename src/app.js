@@ -6,7 +6,7 @@ const { saveSimulation } = require("./services/supabaseSimulationService");
 const { getPrices } = require("./services/supabasePriceService");
 const { getFlyerData } = require("./services/flyerService");
 const { getAdminPrices, updateAdminPrice, updateAdminInverter } = require("./services/supabaseAdminPriceService");
-const { getAdminProposals, getAdminProposal, saveAdminProposal } = require("./services/supabaseProposalService");
+const { getAdminProposals, getAdminProposal, saveAdminProposal, markAdminProposalSent } = require("./services/supabaseProposalService");
 const { getChargerPrices, getAdminChargerPrices, updateChargerPrice } = require("./services/supabaseChargerPriceService");
 
 function createApp() {
@@ -79,7 +79,7 @@ function createApp() {
       }
       if (savedProposal?.id) {
         try {
-          await saveAdminProposal({ ...request, id: savedProposal.id, status: "enviada" });
+          await markAdminProposalSent(savedProposal.id);
         } catch (error) {
           console.warn("Estado da proposta nao atualizado para enviada:", rootMessage(error));
         }

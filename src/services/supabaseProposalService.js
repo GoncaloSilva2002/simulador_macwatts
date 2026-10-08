@@ -42,6 +42,19 @@ async function saveAdminProposal(input) {
   return getAdminProposal(id || await findLastProposalId(normalized.cliente_nome));
 }
 
+async function markAdminProposalSent(id) {
+  const numericId = validId(id);
+  const rows = await request(
+    "propostas",
+    `id=eq.${encodeURIComponent(numericId)}`,
+    "PATCH",
+    { estado: "enviada" },
+    "return=representation"
+  );
+  if (!Array.isArray(rows) || !rows[0]) throw new Error("Proposta não encontrada para atualizar o estado.");
+  return toProposal(rows[0]);
+}
+
 function normalizeProposal(input) {
   const source = input.request || input.quoteRequest || input;
   const sourceQuestionnaire = source.questionnaire || input.questionnaire || {};
@@ -208,4 +221,4 @@ async function request(table, search = "", method = "GET", body, prefer = "retur
   return [];
 }
 
-module.exports = { getAdminProposals, getAdminProposal, saveAdminProposal, normalizeProposal };
+module.exports = { getAdminProposals, getAdminProposal, saveAdminProposal, markAdminProposalSent, normalizeProposal };
