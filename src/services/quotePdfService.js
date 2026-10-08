@@ -380,33 +380,49 @@ function estimateAdminMetrics(q, annualProduction, annualConsumption) {
   }
 
   const usageFactor = Number.isFinite(Number(q.usageFactor)) ? Math.max(0, Math.min(1, Number(q.usageFactor))) : 0.61;
-  const directProductionPctRaw = q.adminDirectProductionPct ?? (q.adminConfigurationEdited ? q.graphHomePct : null);
-  const configuredDirectProductionPct = Number.isFinite(Number(directProductionPctRaw))
-    ? Math.max(0, Math.min(100, Number(directProductionPctRaw)))
+  const consumptionSolarPctRaw = q.adminConsumptionSolarPct;
+  const configuredConsumptionSolarPct = Number.isFinite(Number(consumptionSolarPctRaw))
+    ? Math.max(0, Math.min(100, Number(consumptionSolarPctRaw)))
     : null;
-  const directMonthly = configuredDirectProductionPct == null
-    ? Math.min(productionMonthly, consumptionMonthly * usageFactor)
-    : Math.min(productionMonthly * configuredDirectProductionPct / 100, consumptionMonthly);
-  const excessMonthly = Math.max(0, productionMonthly - directMonthly);
+  const legacyDirectProductionPctRaw = q.adminDirectProductionPct ?? (q.adminConfigurationEdited ? q.graphHomePct : null);
+  const legacyDirectProductionPct = Number.isFinite(Number(legacyDirectProductionPctRaw))
+    ? Math.max(0, Math.min(100, Number(legacyDirectProductionPctRaw)))
+    : null;
+  const minimumGridPctRaw = q.adminMinimumGridProductionPct ?? 5;
+  const minimumGridPct = Number.isFinite(Number(minimumGridPctRaw))
+    ? Math.max(0, Math.min(100, Number(minimumGridPctRaw)))
+    : 5;
+  const minimumGridMonthly = productionMonthly * minimumGridPct / 100;
+  const productionAvailableAfterGrid = Math.max(0, productionMonthly - minimumGridMonthly);
+  const targetDirectMonthly = configuredConsumptionSolarPct != null
+    ? consumptionMonthly * configuredConsumptionSolarPct / 100
+    : legacyDirectProductionPct != null
+      ? productionMonthly * legacyDirectProductionPct / 100
+      : consumptionMonthly * usageFactor;
+  const directMonthly = Math.min(targetDirectMonthly, productionAvailableAfterGrid, consumptionMonthly);
+  const excessMonthly = Math.max(0, productionAvailableAfterGrid - directMonthly);
   const batteryCapacity = q.hasBattery === true || q.hasBattery === "true" || q.hasBattery === "sim"
     ? Math.max(0, Number(q.batteryCapacityKwh) || 0)
     : 0;
   const batteryMonthly = batteryCapacity > 0
     ? Math.min(excessMonthly, batteryCapacity * 0.9 * 30, Math.max(0, consumptionMonthly - directMonthly))
     : 0;
+  const gridMonthly = Math.max(0, productionMonthly - directMonthly - batteryMonthly);
   const directProductionPct = (directMonthly / productionMonthly) * 100;
   const batteryProductionPct = (batteryMonthly / productionMonthly) * 100;
-  const systemConsumptionPct = ((directMonthly + batteryMonthly) / consumptionMonthly) * 100;
+  const gridProductionPct = (gridMonthly / productionMonthly) * 100;
+  const directConsumptionPct = (directMonthly / consumptionMonthly) * 100;
   const batteryConsumptionPct = (batteryMonthly / consumptionMonthly) * 100;
+  const independentConsumptionPct = directConsumptionPct + batteryConsumptionPct;
 
   return {
     homeValue: directProductionPct,
     toBatteryValue: batteryProductionPct,
-    toGridValue: Math.max(0, 100 - directProductionPct - batteryProductionPct),
-    solarValue: systemConsumptionPct - batteryConsumptionPct,
+    toGridValue: gridProductionPct,
+    solarValue: directConsumptionPct,
     batteryValue: batteryConsumptionPct,
-    gridValue: Math.max(0, 100 - systemConsumptionPct),
-    independencePct: Math.max(0, Math.min(100, systemConsumptionPct)),
+    gridValue: Math.max(0, 100 - independentConsumptionPct),
+    independencePct: Math.max(0, Math.min(100, independentConsumptionPct)),
     savingsKwh: Math.max(0, directMonthly + batteryMonthly)
   };
 }

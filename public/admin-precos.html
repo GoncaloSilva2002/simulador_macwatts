@@ -321,7 +321,7 @@
               <div class="field"><label for="proposalGama">Gama</label><select id="proposalGama"><option value="Base">Base</option><option value="Premium">Premium</option><option value="Premium All-Black">Premium All-Black</option></select></div>
               <div class="field"><label for="proposalPanels">Painéis</label><select id="proposalPanels"><option value="2">2 painéis</option><option value="4">4 painéis</option><option value="6">6 painéis</option><option value="8">8 painéis</option><option value="10">10 painéis</option><option value="12">12 painéis</option><option value="14">14 painéis</option><option value="16">16 painéis</option><option value="20">20 painéis</option><option value="22">22 painéis</option><option value="26">26 painéis</option></select></div>
               <div class="field"><label for="proposalBattery">Bateria</label><select id="proposalBattery"><option value="0">Sem bateria</option><option value="5">5 kWh</option><option value="10">10 kWh</option><option value="15">15 kWh</option><option value="20">20 kWh</option><option value="25">25 kWh</option></select></div>
-              <div class="field field-full"><label for="proposalSolarPct">Produção solar para a habitação (%)<output id="proposalSolarPctValue" for="proposalSolarPct">61%</output></label><input id="proposalSolarPct" type="range" min="0" max="100" step="1" value="61"></div>
+              <div class="field field-full"><label for="proposalSolarPct">Consumo anual coberto diretamente pelo solar (%)<output id="proposalSolarPctValue" for="proposalSolarPct">61%</output></label><input id="proposalSolarPct" type="range" min="0" max="100" step="1" value="61"></div>
               <div class="field"><label for="proposalStatus">Estado</label><select id="proposalStatus"><option value="rascunho">Rascunho</option><option value="enviada">Enviada</option><option value="aceite">Aceite</option><option value="arquivada">Arquivada</option></select></div>
               <div class="field"><label for="proposalPriceMode">Preço</label><select id="proposalPriceMode"><option value="automatico">Automático pela tabela</option><option value="manual">Preço manual</option></select></div>
               <div class="field" id="manualPriceField" hidden><label for="proposalManualPrice">Preço manual</label><input id="proposalManualPrice" type="number" min="0" step="0.01" placeholder="0,00"></div>
@@ -666,7 +666,8 @@
             panelsFitKwp: proposalKwp(),
             panelPowerKw: PANEL_KWP,
             adminConfigurationEdited: true,
-            adminDirectProductionPct: solarPct,
+            adminConsumptionSolarPct: solarPct,
+            adminMinimumGridProductionPct: 5,
             graphHomePct: Math.round(solarPct),
             annualProduction: null,
             production: null,
@@ -731,7 +732,7 @@
       $('proposalGama').value = row.gama || questionnaire.gama || 'Base';
       $('proposalPanels').value = String(row.panelsNeeded || questionnaire.panelsNeeded || 8);
       $('proposalBattery').value = String(row.batteryCapacityKwh ?? questionnaire.batteryCapacityKwh ?? 0);
-      const solarPct = Number(questionnaire.adminDirectProductionPct ?? questionnaire.graphHomePct ?? 61);
+      const solarPct = Number(questionnaire.adminConsumptionSolarPct ?? questionnaire.adminDirectProductionPct ?? questionnaire.graphHomePct ?? 61);
       $('proposalSolarPct').value = String(Number.isFinite(solarPct) ? Math.max(0, Math.min(100, solarPct)) : 61);
       $('proposalStatus').value = row.status || 'rascunho';
       $('proposalPriceMode').value = row.priceMode || 'automatico';
