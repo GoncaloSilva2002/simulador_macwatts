@@ -124,12 +124,20 @@ async function handle(event) {
       // continuar a funcionar independentemente da gravação.
       console.warn("Simulação não guardada no Supabase:", rootMessage(error));
     }
+    let savedProposal = null;
     try {
-      await saveAdminProposal(request);
+      savedProposal = await saveAdminProposal(request);
     } catch (error) {
       console.warn("Proposta nÃ£o guardada no Supabase:", rootMessage(error));
     }
     const sent = await sendQuoteEmailBestEffort(request);
+    if (sent && savedProposal?.id) {
+      try {
+        await saveAdminProposal({ ...request, id: savedProposal.id, status: "enviada" });
+      } catch (error) {
+        console.warn("Estado da proposta nao atualizado para enviada:", rootMessage(error));
+      }
+    }
     return response(200, sent
       ? "Pedido processado e email enviado com sucesso para a empresa."
       : "Pedido processado. O email para a empresa nao foi enviado.");
