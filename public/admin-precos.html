@@ -120,6 +120,7 @@
     .field { display: grid; gap: 5px; }
     .field label { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
     .field label::before { content: ""; width: 6px; height: 6px; background: var(--green); border-radius: 50%; box-shadow: 0 0 0 3px var(--mint); }
+    .field label output { margin-left: auto; color: var(--green-dark); font-size: 13px; letter-spacing: 0; text-transform: none; }
     .field input, .field select { width: 100%; height: 40px; padding: 8px 11px; color: var(--ink); background: #fff; border: 1px solid #c9d9e4; border-radius: 9px; }
     .summary { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
     .summary-item { padding: 9px 12px; color: var(--muted); background: rgba(255,255,255,.84); border: 1px solid var(--line); border-radius: 10px; font-size: 12px; box-shadow: 0 5px 14px rgba(16,43,70,.035); }
@@ -181,6 +182,7 @@
     .proposal-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 16px; background: #f7fbfd; border: 1px solid var(--line); border-radius: 15px; }
     .proposal-form .field-full { grid-column: 1 / -1; }
     .proposal-form .field input, .proposal-form .field select { height: 42px; }
+    .proposal-form .field input[type="range"] { height: 8px; padding: 0; border: 0; accent-color: var(--green); cursor: pointer; }
     .proposal-kpi { display: flex; flex-wrap: wrap; gap: 8px; grid-column: 1 / -1; }
     .proposal-kpi span { padding: 9px 11px; color: var(--green-dark); background: var(--mint); border: 1px solid #bfe8d8; border-radius: 9px; font-size: 12px; font-weight: 800; }
     .proposal-list { margin-top: 18px; }
@@ -319,6 +321,7 @@
               <div class="field"><label for="proposalGama">Gama</label><select id="proposalGama"><option value="Base">Base</option><option value="Premium">Premium</option><option value="Premium All-Black">Premium All-Black</option></select></div>
               <div class="field"><label for="proposalPanels">Painéis</label><select id="proposalPanels"><option value="2">2 painéis</option><option value="4">4 painéis</option><option value="6">6 painéis</option><option value="8">8 painéis</option><option value="10">10 painéis</option><option value="12">12 painéis</option><option value="14">14 painéis</option><option value="16">16 painéis</option><option value="20">20 painéis</option><option value="22">22 painéis</option><option value="26">26 painéis</option></select></div>
               <div class="field"><label for="proposalBattery">Bateria</label><select id="proposalBattery"><option value="0">Sem bateria</option><option value="5">5 kWh</option><option value="10">10 kWh</option><option value="15">15 kWh</option><option value="20">20 kWh</option><option value="25">25 kWh</option></select></div>
+              <div class="field field-full"><label for="proposalSolarPct">Produção solar para a habitação (%)<output id="proposalSolarPctValue" for="proposalSolarPct">61%</output></label><input id="proposalSolarPct" type="range" min="0" max="100" step="1" value="61"></div>
               <div class="field"><label for="proposalStatus">Estado</label><select id="proposalStatus"><option value="rascunho">Rascunho</option><option value="enviada">Enviada</option><option value="aceite">Aceite</option><option value="arquivada">Arquivada</option></select></div>
               <div class="field"><label for="proposalPriceMode">Preço</label><select id="proposalPriceMode"><option value="automatico">Automático pela tabela</option><option value="manual">Preço manual</option></select></div>
               <div class="field" id="manualPriceField" hidden><label for="proposalManualPrice">Preço manual</label><input id="proposalManualPrice" type="number" min="0" step="0.01" placeholder="0,00"></div>
@@ -621,8 +624,10 @@
     function updateProposalKpis() {
       const panels = Number($('proposalPanels').value || 0);
       const battery = Number($('proposalBattery').value || 0);
+      const solarPct = Math.max(0, Math.min(100, Number($('proposalSolarPct').value || 0)));
       $('proposalKwpKpi').textContent = `${proposalKwp().toFixed(2).replace('.', ',')} kWp`;
       $('proposalBatteryKpi').textContent = battery > 0 ? `${battery} kWh de bateria` : 'Sem bateria';
+      $('proposalSolarPctValue').textContent = `${solarPct}%`;
       $('manualPriceField').hidden = $('proposalPriceMode').value !== 'manual';
       $('proposalInverterKpi').textContent = `Configuração: ${panels} painéis`;
     }
@@ -630,6 +635,8 @@
     function proposalPayload() {
       const panels = Number($('proposalPanels').value);
       const battery = Number($('proposalBattery').value);
+      const solarPctRaw = Number($('proposalSolarPct').value);
+      const solarPct = Number.isFinite(solarPctRaw) ? Math.max(0, Math.min(100, solarPctRaw)) : 61;
       const base = currentProposalRequest || {};
       const baseQuestionnaire = base.questionnaire || {};
       return {
@@ -659,6 +666,8 @@
             panelsFitKwp: proposalKwp(),
             panelPowerKw: PANEL_KWP,
             adminConfigurationEdited: true,
+            adminDirectProductionPct: solarPct,
+            graphHomePct: Math.round(solarPct),
             annualProduction: null,
             production: null,
             hasBattery: battery > 0,
@@ -722,6 +731,8 @@
       $('proposalGama').value = row.gama || questionnaire.gama || 'Base';
       $('proposalPanels').value = String(row.panelsNeeded || questionnaire.panelsNeeded || 8);
       $('proposalBattery').value = String(row.batteryCapacityKwh ?? questionnaire.batteryCapacityKwh ?? 0);
+      const solarPct = Number(questionnaire.adminDirectProductionPct ?? questionnaire.graphHomePct ?? 61);
+      $('proposalSolarPct').value = String(Number.isFinite(solarPct) ? Math.max(0, Math.min(100, solarPct)) : 61);
       $('proposalStatus').value = row.status || 'rascunho';
       $('proposalPriceMode').value = row.priceMode || 'automatico';
       $('proposalManualPrice').value = row.manualPrice == null ? '' : row.manualPrice;
@@ -827,6 +838,7 @@
     $('previewProposalBtn').addEventListener('click', previewProposal);
     $('proposalPanels').addEventListener('change', updateProposalKpis);
     $('proposalBattery').addEventListener('change', updateProposalKpis);
+    $('proposalSolarPct').addEventListener('input', updateProposalKpis);
     $('proposalPriceMode').addEventListener('change', updateProposalKpis);
     $('proposalSearch').addEventListener('input', renderProposalRows);
     setProposalEditorOpen(false);

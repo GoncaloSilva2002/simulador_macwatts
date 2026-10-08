@@ -281,9 +281,12 @@ async function renderQuoteHtml(request) {
   html = html.replace(/<title>[\s\S]*?<\/title>/i, `<title>Proposta - ${clientTitle}</title>`);
   const production = Number(q.annualProduction || q.production || ((q.panelMonthlyKwh || 0) * (q.panelsNeeded || 0)) || 0) * 12;
   const consumption = Number(q.monthlyKwhEstimate || q.consumption || q.annualConsumption || 0) * 12;
-  const monthly = Number(q.electricitySavings || 0);
   const formatKwh = (amount) => Math.round(Number(amount) || 0).toLocaleString("pt-PT").replace(/\u00a0/g, " ");
   const editedMetrics = q.adminConfigurationEdited ? estimateAdminMetrics(q, production, consumption) : null;
+  const pricePerKwh = Number.isFinite(Number(q.pricePerKwh)) && Number(q.pricePerKwh) > 0 ? Number(q.pricePerKwh) : 0.20;
+  const monthly = editedMetrics
+    ? Math.round(editedMetrics.savingsKwh * pricePerKwh)
+    : Number(q.electricitySavings || 0);
   const independence = editedMetrics
     ? editedMetrics.independencePct
     : Number.isFinite(Number(q.independencePct))
@@ -373,11 +376,17 @@ function estimateAdminMetrics(q, annualProduction, annualConsumption) {
   const productionMonthly = Math.max(0, Number(annualProduction) || 0) / 12;
   const consumptionMonthly = Math.max(0, Number(annualConsumption) || 0) / 12;
   if (!productionMonthly || !consumptionMonthly) {
-    return { homeValue: 0, toBatteryValue: 0, toGridValue: 100, solarValue: 0, batteryValue: 0, gridValue: 100, independencePct: 0 };
+    return { homeValue: 0, toBatteryValue: 0, toGridValue: 100, solarValue: 0, batteryValue: 0, gridValue: 100, independencePct: 0, savingsKwh: 0 };
   }
 
   const usageFactor = Number.isFinite(Number(q.usageFactor)) ? Math.max(0, Math.min(1, Number(q.usageFactor))) : 0.61;
-  const directMonthly = Math.min(productionMonthly, consumptionMonthly * usageFactor);
+  const directProductionPctRaw = q.adminDirectProductionPct ?? (q.adminConfigurationEdited ? q.graphHomePct : null);
+  const configuredDirectProductionPct = Number.isFinite(Number(directProductionPctRaw))
+    ? Math.max(0, Math.min(100, Number(directProductionPctRaw)))
+    : null;
+  const directMonthly = configuredDirectProductionPct == null
+    ? Math.min(productionMonthly, consumptionMonthly * usageFactor)
+    : Math.min(productionMonthly * configuredDirectProductionPct / 100, consumptionMonthly);
   const excessMonthly = Math.max(0, productionMonthly - directMonthly);
   const batteryCapacity = q.hasBattery === true || q.hasBattery === "true" || q.hasBattery === "sim"
     ? Math.max(0, Number(q.batteryCapacityKwh) || 0)
@@ -397,7 +406,8 @@ function estimateAdminMetrics(q, annualProduction, annualConsumption) {
     solarValue: systemConsumptionPct - batteryConsumptionPct,
     batteryValue: batteryConsumptionPct,
     gridValue: Math.max(0, 100 - systemConsumptionPct),
-    independencePct: Math.max(0, Math.min(100, systemConsumptionPct))
+    independencePct: Math.max(0, Math.min(100, systemConsumptionPct)),
+    savingsKwh: Math.max(0, directMonthly + batteryMonthly)
   };
 }
 
