@@ -604,7 +604,7 @@
     const panelPower = 0.53;
     const productionPerPanel = ZONE_PANEL_MONTHLY_KWH[currentZoneLabel] ?? DEFAULT_PANEL_MONTHLY_KWH;
     const usageTime = usageTimeInputs.find((input) => input.checked)?.value || null;
-    const usageFactor = usageTime === "manhas" ? 0.65 : usageTime === "tardes" ? 0.50 : usageTime === "noites" ? 0.28 : 0.40;
+    const usageFactor = usageTime === "manhas" ? 0.40 : usageTime === "tardes" ? 0.55 : usageTime === "noites" ? 0.28 : 0.61;
     const selectedPhase = phaseTypeInputs.find((input) => input.checked)?.value || "monofasica";
     const wantsBattery = batteryChoiceInputs.find((input) => input.checked)?.value === "sim";
     const monthlyKwhTotal = value / pricePerKwh;
