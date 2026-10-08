@@ -13,6 +13,7 @@ run("node", ["--check", path.join(root, "src", "services", "quoteEmailService.js
 run("node", ["--check", path.join(root, "src", "services", "supabaseSimulationService.js")]);
 run("node", ["--check", path.join(root, "src", "services", "quotePdfService.js")]);
 run("node", ["--check", path.join(root, "src", "services", "supabasePriceService.js")]);
+run("node", ["--check", path.join(root, "src", "services", "supabaseProposalService.js")]);
 
 fs.rmSync(distDir, { recursive: true, force: true });
 fs.cpSync(publicDir, distDir, { recursive: true });
@@ -22,7 +23,7 @@ fs.copyFileSync(path.join(publicDir, "admin-precos.html"), path.join(distDir, "a
 
 const defaultApiBaseUrl = "https://ikuf62mxjq5flcx2yud25t2tra0wejfh.lambda-url.eu-west-3.on.aws";
 const apiBaseUrl = (process.env.API_BASE_URL || defaultApiBaseUrl).trim().replace(/\/+$/, "");
-const config = `window.MACWATTS_CONFIG = ${JSON.stringify({ apiBaseUrl }, null, 2)};\n`;
+const config = `const localMacwattsHost = ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname)\n  || window.location.protocol === "file:";\n\nwindow.MACWATTS_CONFIG = {\n  apiBaseUrl: localMacwattsHost ? "http://localhost:8080" : ${JSON.stringify(apiBaseUrl)}\n};\n`;
 fs.writeFileSync(path.join(distDir, "config.js"), config, "utf8");
 
 console.log(`Amplify build concluido em ${distDir}`);
