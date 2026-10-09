@@ -188,6 +188,8 @@
     .proposal-list { margin-top: 18px; }
     .proposal-list table { min-width: 650px; }
     .proposal-list .proposal-open { min-height: 34px; padding: 7px 11px; font-size: 12px; }
+    .proposal-list .proposal-delete { min-height: 34px; padding: 7px 11px; color: var(--danger); font-size: 12px; }
+    .proposal-list .proposal-delete:hover:not(:disabled) { color: #8f2f38; background: #fff1f2; border-color: #e4aab0; }
     .proposal-preview { min-height: 470px; overflow: hidden; background: #eaf0f4; border: 1px solid var(--line); border-radius: 15px; }
     .proposal-preview iframe { display: block; width: 100%; height: 660px; border: 0; background: #fff; }
     .proposal-preview-empty { display: grid; min-height: 470px; place-items: center; padding: 30px; color: var(--muted); text-align: center; }
@@ -702,12 +704,38 @@
           <td data-label="Solução" class="muted">${row.panelsNeeded} painéis · ${Number(row.panelsFitKwp).toFixed(2).replace('.', ',')} kWp${row.batteryCapacityKwh > 0 ? ` · ${row.batteryCapacityKwh} kWh` : ''}</td>
           <td data-label="Gama" class="muted">${esc(row.gama)}<small>${date}</small></td>
           <td data-label="Estado"><span class="status-pill ${esc(status)}">${esc(status)}</span></td>
-          <td data-label="Ação"><button class="btn secondary proposal-open" type="button" data-proposal-id="${esc(row.id)}">Abrir</button></td>
+          <td data-label="Ação"><button class="btn secondary proposal-open" type="button" data-proposal-id="${esc(row.id)}">Abrir</button> <button class="btn secondary proposal-delete" type="button" data-proposal-id="${esc(row.id)}" data-proposal-name="${esc(row.clientName)}">Eliminar</button></td>
         </tr>`;
       }).join('');
       document.querySelectorAll('.proposal-open').forEach((button) => {
         button.addEventListener('click', () => loadProposal(button.dataset.proposalId));
       });
+      document.querySelectorAll('.proposal-delete').forEach((button) => {
+        button.addEventListener('click', () => deleteProposal(button.dataset.proposalId, button.dataset.proposalName));
+      });
+    }
+
+    async function deleteProposal(id, clientName) {
+      if (!window.confirm(`Eliminar a proposta de ${clientName || 'este cliente'}? Esta ação não pode ser desfeita.`)) return;
+      const button = [...document.querySelectorAll('.proposal-delete')]
+        .find((item) => String(item.dataset.proposalId) === String(id));
+      if (button) button.disabled = true;
+      showProposalMessage('A eliminar proposta…', 'info');
+      try {
+        const response = await proposalRequest({ action: 'delete', id });
+        if (!response.ok) throw new Error(await response.text());
+        proposalRows = proposalRows.filter((row) => String(row.id) !== String(id));
+        renderProposalRows();
+        if (String($('proposalId').value) === String(id)) {
+          setProposalForm(null);
+          setProposalEditorOpen(false);
+          $('proposalPreview').innerHTML = '<div class="proposal-preview-empty">Seleciona uma proposta para a pré-visualizar.</div>';
+        }
+        showProposalMessage('Proposta eliminada com sucesso.', 'ok');
+      } catch (error) {
+        if (button) button.disabled = false;
+        showProposalMessage(error.message || 'Não foi possível eliminar a proposta.', 'error');
+      }
     }
 
     async function loadProposals() {

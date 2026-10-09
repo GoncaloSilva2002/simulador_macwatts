@@ -6,7 +6,7 @@ const { saveSimulation } = require("./services/supabaseSimulationService");
 const { getPrices } = require("./services/supabasePriceService");
 const { getFlyerData } = require("./services/flyerService");
 const { getAdminPrices, updateAdminPrice, updateAdminInverter } = require("./services/supabaseAdminPriceService");
-const { getAdminProposals, getAdminProposal, saveAdminProposal, markAdminProposalSent } = require("./services/supabaseProposalService");
+const { getAdminProposals, getAdminProposal, saveAdminProposal, markAdminProposalSent, deleteAdminProposal } = require("./services/supabaseProposalService");
 const { getChargerPrices, getAdminChargerPrices, updateChargerPrice } = require("./services/supabaseChargerPriceService");
 
 function createApp() {
@@ -150,6 +150,7 @@ function createApp() {
       if (req.body?.action === "list") return res.json(await getAdminProposals());
       if (req.body?.action === "get") return res.json(await getAdminProposal(req.body?.id));
       if (req.body?.action === "save") return res.json(await saveAdminProposal(req.body?.proposal || {}));
+      if (req.body?.action === "delete") return res.json(await deleteAdminProposal(req.body?.id));
       return res.status(400).send("Ação de proposta inválida.");
     } catch (error) {
       return res.status(400).send(rootMessage(error));

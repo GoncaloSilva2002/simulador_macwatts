@@ -1,7 +1,7 @@
 const { sendQuoteEmail } = require("./services/quoteEmailService");
 const { saveSimulation } = require("./services/supabaseSimulationService");
 const { getAdminPrices, updateAdminPrice, updateAdminInverter } = require("./services/supabaseAdminPriceService");
-const { getAdminProposals, getAdminProposal, saveAdminProposal, markAdminProposalSent } = require("./services/supabaseProposalService");
+const { getAdminProposals, getAdminProposal, saveAdminProposal, markAdminProposalSent, deleteAdminProposal } = require("./services/supabaseProposalService");
 const { getChargerPrices, getAdminChargerPrices, updateChargerPrice } = require("./services/supabaseChargerPriceService");
 const { getFlyerData } = require("./services/flyerService");
 const { renderQuoteHtml } = require("./services/quotePdfService");
@@ -78,6 +78,7 @@ async function handle(event) {
     if (request.action === "list") return jsonResponse(200, await getAdminProposals());
     if (request.action === "get") return jsonResponse(200, await getAdminProposal(request.id));
     if (request.action === "save") return jsonResponse(200, await saveAdminProposal(request.proposal || {}));
+    if (request.action === "delete") return jsonResponse(200, await deleteAdminProposal(request.id));
     return response(400, "Ação de proposta inválida.");
   }
 

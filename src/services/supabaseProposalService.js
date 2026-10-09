@@ -55,6 +55,19 @@ async function markAdminProposalSent(id) {
   return toProposal(rows[0]);
 }
 
+async function deleteAdminProposal(id) {
+  const numericId = validId(id);
+  const rows = await request(
+    "propostas",
+    `id=eq.${encodeURIComponent(numericId)}`,
+    "DELETE",
+    undefined,
+    "return=representation"
+  );
+  if (!Array.isArray(rows) || !rows[0]) throw new Error("Proposta não encontrada.");
+  return { id: numericId };
+}
+
 function normalizeProposal(input) {
   const source = input.request || input.quoteRequest || input;
   const sourceQuestionnaire = source.questionnaire || input.questionnaire || {};
@@ -221,4 +234,4 @@ async function request(table, search = "", method = "GET", body, prefer = "retur
   return [];
 }
 
-module.exports = { getAdminProposals, getAdminProposal, saveAdminProposal, markAdminProposalSent, normalizeProposal };
+module.exports = { getAdminProposals, getAdminProposal, saveAdminProposal, markAdminProposalSent, deleteAdminProposal, normalizeProposal };
